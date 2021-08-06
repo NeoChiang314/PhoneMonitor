@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/rsrpView"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="left"
+        android:background="@color/black"
+        android:gravity="left"
+        android:text="test"
+        android:textColor="@color/white"
+        android:textSize="30dp"></TextView>
+
+    <TextView
+        android:id="@+id/mccView"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="left"
+        android:background="@color/black"
+        android:gravity="left"
+        android:text="test"
+        android:textColor="@color/white"
+        android:textSize="30dp"></TextView>
+
+    <TextView
+        android:id="@+id/mncView"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="left"
+        android:background="@color/black"
+        android:gravity="left"
+        android:text="test"
+        android:textColor="@color/white"
+        android:textSize="30dp"></TextView>
+
+    <TextView
+        android:id="@+id/pciView"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="left"
+        android:background="@color/black"
+        android:gravity="left"
+        android:text="test"
+        android:textColor="@color/white"
+        android:textSize="30dp"></TextView>
+
+    <TextView
+        android:id="@+id/tacView"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="left"
+        android:background="@color/black"
+        android:gravity="left"
+        android:text="test"
+        android:textColor="@color/white"
+        android:textSize="30dp"></TextView>
+
+
+</LinearLayout>
