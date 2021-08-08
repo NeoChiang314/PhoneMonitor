@@ -24,20 +24,12 @@ public class CellInfoService extends Service {
     TelephonyManager telephonyManager;
     MyPhoneStateListener myPhoneStateListener;
     List<CellInfo> cellInfoList = new ArrayList<>();
-    List<BeanCellInfo> beanCellInfos = new ArrayList<>();
-    List<BeanCellInfo> lastBeanCellInfos = new ArrayList<>();
+    List<CellInfoBean> cellInfoBeans = new ArrayList<>();
+    List<CellInfoBean> lastCellInfoBeans = new ArrayList<>();
 
-    public List<BeanCellInfo> getLastBeanCellInfos() {
-        return lastBeanCellInfos;
+    public List<CellInfoBean> getLastCellInfoBeans() {
+        return lastCellInfoBeans;
     }
-
-//    int cellRSRP;
-//    String cellMcc;
-//    String cellMnc;
-//    int cellPci;
-//    int cellTac;
-//    int count;
-//    int connection;
 
     public static CellInfoService getInstance () {
         return instance;
@@ -46,6 +38,7 @@ public class CellInfoService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+//        Toast.makeText(CellInfoService.this, "Create", Toast.LENGTH_SHORT).show();
 //        count = 0;
         myPhoneStateListener = new MyPhoneStateListener();
         instance = this;
@@ -53,6 +46,7 @@ public class CellInfoService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
+//        Toast.makeText(CellInfoService.this, "Start", Toast.LENGTH_SHORT).show();
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         return super.onStartCommand(intent, flags, startId);
@@ -61,8 +55,10 @@ public class CellInfoService extends Service {
     @Override
     public void onDestroy(){
         super.onDestroy();
+//        Toast.makeText(CellInfoService.this, "Destroy", Toast.LENGTH_SHORT).show();
+        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_NONE);
         cellInfoList.clear();
-        beanCellInfos.clear();
+        cellInfoBeans.clear();
         instance = null;
     }
 
@@ -77,7 +73,6 @@ public class CellInfoService extends Service {
         @Override
         public void onSignalStrengthsChanged(SignalStrength signalStrength) {
             super.onSignalStrengthsChanged(signalStrength);
-//            count ++;
             getGeneralCellInfo();
         }
     }
@@ -87,31 +82,24 @@ public class CellInfoService extends Service {
             ActivityCompat.requestPermissions(MainActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MainActivity.FINE_LOCATION_REQUEST);
         }
         else{
-            beanCellInfos.clear();
+            cellInfoBeans.clear();
             try{
                 cellInfoList = this.telephonyManager.getAllCellInfo();
                 for (CellInfo cellInfo : cellInfoList) {
-//                    if(cellInfo.getCellConnectionStatus() == CellInfo.CONNECTION_PRIMARY_SERVING || cellInfo.getCellConnectionStatus() == CellInfo.CONNECTION_SECONDARY_SERVING){
-                        if (cellInfo instanceof CellInfoLte) {
-                            BeanCellInfo beanCellInfo = new BeanCellInfo();
-                            beanCellInfo.setCellRSRP(((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp());
-                            beanCellInfo.setCellMcc(((CellInfoLte) cellInfo).getCellIdentity().getMccString());
-                            beanCellInfo.setCellMnc(((CellInfoLte) cellInfo).getCellIdentity().getMncString());
-                            beanCellInfo.setCellPci(((CellInfoLte) cellInfo).getCellIdentity().getPci());
-                            beanCellInfo.setCellTac(((CellInfoLte) cellInfo).getCellIdentity().getTac());
-                            beanCellInfo.setConnectionCode(((CellInfoLte) cellInfo).getCellConnectionStatus());
-                            beanCellInfos.add(beanCellInfo);
-//                            cellRSRP = ((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp();
-//                            cellMcc = ((CellInfoLte) cellInfo).getCellIdentity().getMccString();
-//                            cellMnc = ((CellInfoLte) cellInfo).getCellIdentity().getMncString();
-//                            cellPci = ((CellInfoLte) cellInfo).getCellIdentity().getPci();
-//                            cellTac = ((CellInfoLte) cellInfo).getCellIdentity().getTac();
-//                            connection = cellInfo.getCellConnectionStatus();
-                        }
-//                    }
+                    if (cellInfo instanceof CellInfoLte) {
+                        CellInfoBean cellInfoBean = new CellInfoBean();
+                        cellInfoBean.setCellRSRP(((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp());
+                        cellInfoBean.setCellRSRQ(((CellInfoLte) cellInfo).getCellSignalStrength().getRsrq());
+                        cellInfoBean.setCellMcc(((CellInfoLte) cellInfo).getCellIdentity().getMccString());
+                        cellInfoBean.setCellMnc(((CellInfoLte) cellInfo).getCellIdentity().getMncString());
+                        cellInfoBean.setCellPci(((CellInfoLte) cellInfo).getCellIdentity().getPci());
+                        cellInfoBean.setCellTac(((CellInfoLte) cellInfo).getCellIdentity().getTac());
+                        cellInfoBean.setConnectionCode(((CellInfoLte) cellInfo).getCellConnectionStatus());
+                        cellInfoBeans.add(cellInfoBean);
+                    }
                 }
-                instance.lastBeanCellInfos = beanCellInfos;
-                MainActivity.getInstance().showCellData(beanCellInfos);
+                instance.lastCellInfoBeans = cellInfoBeans;
+                CellInfoActivity.getInstance().showCellData(cellInfoBeans);
             } catch (Exception e) {
                 Toast.makeText(CellInfoService.this, "Phone states measurement failed", Toast.LENGTH_SHORT).show();
             }

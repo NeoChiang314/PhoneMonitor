@@ -2,14 +2,14 @@ package com.example.phonemonitor;
 
 import android.telephony.CellInfo;
 
-public class BeanCellInfo {
+public class CellInfoBean {
 
     int cellRSRP;
+    int cellRSRQ;
     String cellMcc;
     String cellMnc;
     int cellPci;
     int cellTac;
-//    int count;
     int connectionCode;
     String connectionType;
 
@@ -19,6 +19,14 @@ public class BeanCellInfo {
 
     public void setCellRSRP(int cellRSRP) {
         this.cellRSRP = cellRSRP;
+    }
+
+    public int getCellRSRQ() {
+        return cellRSRQ;
+    }
+
+    public void setCellRSRQ(int cellRSRQ) {
+        this.cellRSRQ = cellRSRQ;
     }
 
     public String getCellMcc() {
@@ -52,14 +60,6 @@ public class BeanCellInfo {
     public void setCellTac(int cellTac) {
         this.cellTac = cellTac;
     }
-
-//    public int getCount() {
-//        return count;
-//    }
-//
-//    public void setCount(int count) {
-//        this.count = count;
-//    }
 
     public int getConnectionCode() {
         return connectionCode;
