@@ -24,11 +24,12 @@ public class MainActivity extends AppCompatActivity {
     public static MainActivity instance;
     public static final int FINE_LOCATION_REQUEST = 1;
 //    TelephonyManager telephonyManager;
-//    int tempCellRSRP;
-//    String tempCellMcc;
-//    String tempCellMnc;
-//    int tempCellPci;
-//    int tempCellTac;
+    static int tempCellRSRP;
+    static String tempCellMcc;
+    static String tempCellMnc;
+    static int tempCellPci;
+    static int tempCellTac;
+    static int tempCount;
 //    List<CellInfo> cellInfoList;
     TextView rsrpText, mccText, mncText, pciText, tacText, countText;
 
@@ -63,12 +64,12 @@ public class MainActivity extends AppCompatActivity {
             this.startService(intent);
         }
         else{
-            rsrpText.setText("RSRP value: " + String.valueOf(CellinfoService.getInstance().cellRSRP));
-            mccText.setText("Cell Mcc: " + CellinfoService.getInstance().cellMcc);
-            mncText.setText("Cell Mnc: " + CellinfoService.getInstance().cellMnc);
-            pciText.setText("Cell Pci: " + String.valueOf(CellinfoService.getInstance().cellPci));
-            tacText.setText("Cell Tac: " + String.valueOf(CellinfoService.getInstance().cellTac));
-            countText.setText("Change times: " + String.valueOf(CellinfoService.getInstance().count));
+            rsrpText.setText("RSRP value: " + String.valueOf(tempCellRSRP));
+            mccText.setText("Cell Mcc: " + tempCellMcc);
+            mncText.setText("Cell Mnc: " + tempCellMnc);
+            pciText.setText("Cell Pci: " + String.valueOf(tempCellPci));
+            tacText.setText("Cell Tac: " + String.valueOf(tempCellTac));
+            countText.setText("Change times: " + String.valueOf(tempCount));
         }
     }
 
@@ -101,13 +102,19 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-    public void showCellData (CellinfoService instance) {
-        rsrpText.setText("RSRP value: " + String.valueOf(instance.cellRSRP));
-        mccText.setText("Cell Mcc: " + instance.cellMcc);
-        mncText.setText("Cell Mnc: " + instance.cellMnc);
-        pciText.setText("Cell Pci: " + String.valueOf(instance.cellPci));
-        tacText.setText("Cell Tac: " + String.valueOf(instance.cellTac));
-        countText.setText("Change times: " + String.valueOf(instance.count));
+    public void showCellData (int rsrp, String mcc, String mnc, int pci, int tac, int count) {
+        this.tempCellRSRP = rsrp;
+        this.tempCellMcc = mcc;
+        this.tempCellMnc = mnc;
+        this.tempCellPci = pci;
+        this.tempCellTac = tac;
+        this.tempCount = count;
+        this.rsrpText.setText("RSRP value: " + String.valueOf(rsrp));
+        this.mccText.setText("Cell Mcc: " + mcc);
+        this.mncText.setText("Cell Mnc: " + mnc);
+        this.pciText.setText("Cell Pci: " + String.valueOf(pci));
+        this.tacText.setText("Cell Tac: " + String.valueOf(tac));
+        this.countText.setText("Change times: " + String.valueOf(count));
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

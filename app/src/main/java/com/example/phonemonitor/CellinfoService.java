@@ -26,6 +26,7 @@ public class CellinfoService extends Service {
 
     public static CellinfoService instance = null;
     TelephonyManager telephonyManager;
+    MyPhoneStateListener myPhoneStateListener;
     int cellRSRP;
     String cellMcc;
     String cellMnc;
@@ -40,18 +41,21 @@ public class CellinfoService extends Service {
 
     @Override
     public void onCreate() {
-        count = 0;
         super.onCreate();
+        count = 0;
+        myPhoneStateListener = new MyPhoneStateListener();
         instance = this;
-        CellinfoService.MyPhoneStateListener myPhoneStateListener = new CellinfoService.MyPhoneStateListener();
-        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, CellinfoService.MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+//        CellinfoService.MyPhoneStateListener myPhoneStateListener = new CellinfoService.MyPhoneStateListener();
+//        this.telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+//        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, CellinfoService.MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
     }
 
-//    @Override
-//    public int onStartCommand(final Intent intent, int flags, int startId) {
-//        return super.onStartCommand(intent, flags, startId);
-//    }
+    @Override
+    public int onStartCommand(final Intent intent, int flags, int startId) {
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     @Nullable
     @Override
@@ -59,11 +63,13 @@ public class CellinfoService extends Service {
         return null;
     }
 
+
     private class MyPhoneStateListener extends PhoneStateListener {
         @Override
         public void onSignalStrengthsChanged(SignalStrength signalStrength) {
             super.onSignalStrengthsChanged(signalStrength);
             count ++;
+            Toast.makeText(CellinfoService.this, "Signal strength changed", Toast.LENGTH_SHORT).show();
             getGeneralCellInfo();
         }
     }
@@ -74,7 +80,7 @@ public class CellinfoService extends Service {
         }
         else{
             try{
-                cellInfoList = telephonyManager.getAllCellInfo();
+                cellInfoList = this.telephonyManager.getAllCellInfo();
                 for (CellInfo cellInfo : cellInfoList) {
 //                    if(cellInfo.getCellConnectionStatus() == CellInfo.CONNECTION_PRIMARY_SERVING || cellInfo.getCellConnectionStatus() ==CellInfo.CONNECTION_SECONDARY_SERVING){
                         if (cellInfo instanceof CellInfoLte) {
@@ -83,8 +89,7 @@ public class CellinfoService extends Service {
                             cellMnc = ((CellInfoLte) cellInfo).getCellIdentity().getMncString();
                             cellPci = ((CellInfoLte) cellInfo).getCellIdentity().getPci();
                             cellTac = ((CellInfoLte) cellInfo).getCellIdentity().getTac();
-                            instance = this;
-                            MainActivity.getInstance().showCellData(instance);
+                            MainActivity.getInstance().showCellData(cellRSRP, cellMcc, cellMnc, cellPci, cellTac, count);
                         }
 //                    }
                 }
