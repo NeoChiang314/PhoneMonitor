@@ -1,37 +1,40 @@
 package com.example.phonemonitor;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.telephony.SignalStrength;
-import android.util.Log;
-import android.widget.TextView;
-import android.content.Context;
 import android.telephony.CellInfo;
-import android.telephony.CellInfoLte;
-import android.telephony.TelephonyManager;
-import android.telephony.PhoneStateListener;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.security.Provider;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     public static MainActivity instance;
     public static final int FINE_LOCATION_REQUEST = 1;
-//    TelephonyManager telephonyManager;
-    static int tempCellRSRP;
-    static String tempCellMcc;
-    static String tempCellMnc;
-    static int tempCellPci;
-    static int tempCellTac;
-    static int tempCount;
-//    List<CellInfo> cellInfoList;
-    TextView rsrpText, mccText, mncText, pciText, tacText, countText;
+    List<BeanCellInfo> beanCellInfos = new ArrayList<>();
+    ListView listView;
+
+//    static int tempCellRSRP;
+//    static String tempCellMcc;
+//    static String tempCellMnc;
+//    static int tempCellPci;
+//    static int tempCellTac;
+//    static int tempCount;
+//    static String tempConnectionType;
+//    TextView rsrpText, mccText, mncText, pciText, tacText, countText, connectionText;
+
+    public List<BeanCellInfo> getBeanCellInfos() {
+        return beanCellInfos;
+    }
+
+    public void setBeanCellInfos(List<BeanCellInfo> beanCellInfos) {
+        this.beanCellInfos = beanCellInfos;
+    }
 
     public static MainActivity getInstance() {
         return instance;
@@ -40,81 +43,98 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Toast.makeText(MainActivity.this, "Create", Toast.LENGTH_SHORT).show();
         instance = this;
         setContentView(R.layout.activity_main);
-        rsrpText = findViewById(R.id.rsrpView);
-        mccText = findViewById(R.id.mccView);
-        mncText = findViewById(R.id.mncView);
-        pciText = findViewById(R.id.pciView);
-        tacText = findViewById(R.id.tacView);
-        countText = findViewById(R.id.countView);
+        listView = findViewById(R.id.cellInfo);
 
-//        MyPhoneStateListener myPhoneStateListener = new MyPhoneStateListener();
-//        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-//        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+//        rsrpText = findViewById(R.id.rsrpView);
+//        mccText = findViewById(R.id.mccView);
+//        mncText = findViewById(R.id.mncView);
+//        pciText = findViewById(R.id.pciView);
+//        tacText = findViewById(R.id.tacView);
+//        countText = findViewById(R.id.countView);
+//        connectionText = findViewById(R.id.connectionView);
 
-        if (CellinfoService.getInstance() == null) {
-            rsrpText.setText("RSRP value: null");
-            mccText.setText("Cell Mcc: null");
-            mncText.setText("Cell Mnc: null");
-            pciText.setText("Cell Pci: null");
-            tacText.setText("Cell Tac: null");
+        if (CellInfoService.getInstance() == null) {
+//            rsrpText.setText("RSRP value: null");
+//            mccText.setText("Cell Mcc: null");
+//            mncText.setText("Cell Mnc: null");
+//            pciText.setText("Cell Pci: null");
+//            tacText.setText("Cell Tac: null");
+//            connectionText.setText("Connection type: null");
+//            countText.setText("Changed times: 0");
             Intent intent = new Intent();
-            intent.setClass(this, CellinfoService.class);
+            intent.setClass(this, CellInfoService.class);
             this.startService(intent);
         }
         else{
-            rsrpText.setText("RSRP value: " + String.valueOf(tempCellRSRP));
-            mccText.setText("Cell Mcc: " + tempCellMcc);
-            mncText.setText("Cell Mnc: " + tempCellMnc);
-            pciText.setText("Cell Pci: " + String.valueOf(tempCellPci));
-            tacText.setText("Cell Tac: " + String.valueOf(tempCellTac));
-            countText.setText("Change times: " + String.valueOf(tempCount));
+//            rsrpText.setText("RSRP value: " + String.valueOf(tempCellRSRP));
+//            mccText.setText("Cell Mcc: " + tempCellMcc);
+//            mncText.setText("Cell Mnc: " + tempCellMnc);
+//            pciText.setText("Cell Pci: " + String.valueOf(tempCellPci));
+//            tacText.setText("Cell Tac: " + String.valueOf(tempCellTac));
+//            connectionText.setText("Connection type: " + tempConnectionType);
+//            countText.setText("Change times: " + String.valueOf(tempCount));
         }
     }
 
-//    private class MyPhoneStateListener extends PhoneStateListener {
-//        @Override
-//        public void onSignalStrengthsChanged(SignalStrength signalStrength) {
-//            super.onSignalStrengthsChanged(signalStrength);
-//            getGeneralCellInfo();
-//        }
-//    }
+    @Override
+    protected void onStart(){
+        super.onStart();
+        Toast.makeText(MainActivity.this, "Start", Toast.LENGTH_SHORT).show();
+    }
 
-//    public void getGeneralCellInfo () {
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_REQUEST);
-//        } else {
-//            try {
-//                cellInfoList = telephonyManager.getAllCellInfo();
-//                for (CellInfo cellInfo : cellInfoList) {
-//                    if (cellInfo instanceof CellInfoLte) {
-//                        cellRSRP = ((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp();
-//                        cellMcc = ((CellInfoLte) cellInfo).getCellIdentity().getMccString();
-//                        cellMnc = ((CellInfoLte) cellInfo).getCellIdentity().getMncString();
-//                        cellPci = ((CellInfoLte) cellInfo).getCellIdentity().getPci();
-//                        cellTac = ((CellInfoLte) cellInfo).getCellIdentity().getTac();
-//                    }
-//                }
-//            } catch (Exception e) {
-//                Toast.makeText(this, "Phone states measurement failed", Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//    }
+    @Override
+    protected void onPause(){
+        super.onPause();
+        Toast.makeText(MainActivity.this, "Pause", Toast.LENGTH_SHORT).show();
+    }
 
-    public void showCellData (int rsrp, String mcc, String mnc, int pci, int tac, int count) {
-        this.tempCellRSRP = rsrp;
-        this.tempCellMcc = mcc;
-        this.tempCellMnc = mnc;
-        this.tempCellPci = pci;
-        this.tempCellTac = tac;
-        this.tempCount = count;
-        this.rsrpText.setText("RSRP value: " + String.valueOf(rsrp));
-        this.mccText.setText("Cell Mcc: " + mcc);
-        this.mncText.setText("Cell Mnc: " + mnc);
-        this.pciText.setText("Cell Pci: " + String.valueOf(pci));
-        this.tacText.setText("Cell Tac: " + String.valueOf(tac));
-        this.countText.setText("Change times: " + String.valueOf(count));
+    @Override
+    protected void onRestart(){
+        super.onRestart();
+        Toast.makeText(MainActivity.this, "Restart", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        beanCellInfos.clear();
+        instance = null;
+        Toast.makeText(MainActivity.this, "Destroy", Toast.LENGTH_SHORT).show();
+    }
+
+    public void showCellData (List<BeanCellInfo> beanCellInfos) {
+
+        listView.setAdapter(new CellInfoAdapter(beanCellInfos, this));
+
+//        this.tempCellRSRP = rsrp;
+//        this.tempCellMcc = mcc;
+//        this.tempCellMnc = mnc;
+//        this.tempCellPci = pci;
+//        this.tempCellTac = tac;
+//        this.tempCount = count;
+//        if(connection == CellInfo.CONNECTION_NONE){
+//            this.tempConnectionType = "Not a serving cell";
+//        }
+//        else if(connection == CellInfo.CONNECTION_PRIMARY_SERVING){
+//            this.tempConnectionType = "Primary serving cell";
+//        }
+//        else if(connection == CellInfo.CONNECTION_SECONDARY_SERVING){
+//            this.tempConnectionType = "Secondary serving cell";
+//        }
+//        else{
+//            this.tempConnectionType = "Unknown";
+//        }
+//
+//        this.rsrpText.setText("RSRP value: " + String.valueOf(rsrp));
+//        this.mccText.setText("Cell Mcc: " + mcc);
+//        this.mncText.setText("Cell Mnc: " + mnc);
+//        this.pciText.setText("Cell Pci: " + String.valueOf(pci));
+//        this.tacText.setText("Cell Tac: " + String.valueOf(tac));
+//        this.connectionText.setText("Connection type: " + tempConnectionType);
+//        this.countText.setText("Change times: " + String.valueOf(count));
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -122,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == FINE_LOCATION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(MainActivity.this, "Fine Location Permission Granted", Toast.LENGTH_SHORT).show();
-                CellinfoService.getInstance().getGeneralCellInfo();
+                CellInfoService.getInstance().getGeneralCellInfo();
             } else {
                 Toast.makeText(MainActivity.this, "Fine Location Permission Denied", Toast.LENGTH_SHORT).show();
             }

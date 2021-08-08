@@ -17,7 +17,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".CellinfoService">
+        <service android:name=".CellInfoService">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
