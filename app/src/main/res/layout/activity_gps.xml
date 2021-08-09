@@ -6,21 +6,23 @@
     android:orientation="vertical">
 
     <ToggleButton
-        android:id="@+id/cellInfoToggleButton"
+        android:id="@+id/gpsToggleButton"
         android:layout_width="200dp"
         android:layout_height="100dp"
         android:shadowColor="@color/white"
         android:textColor="@color/white"
-        android:textOn="Stop signal monitoring"
-        android:textOff="Start signal monitoring">
+        android:textOn="Stop gps monitoring"
+        android:textOff="Start gps monitoring">
 
     </ToggleButton>
 
-    <ListView
-        android:id="@+id/cellInfo"
+    <TextView
+        android:id="@+id/temp"
+        android:textSize="30dp"
+        android:textColor="@color/white"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-    </ListView>
+        android:layout_height="wrap_content"
+        android:text="This function has not completed yet">
+    </TextView>>
 
 </LinearLayout>

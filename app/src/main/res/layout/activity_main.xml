@@ -23,4 +23,15 @@
 
     </Button>
 
+    <Button
+        android:id="@+id/gpsButton"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:shadowColor="@color/white"
+        android:textColor="@color/white"
+        android:text="Gps monitoring"
+        android:onClick="startGpsActivity">
+
+    </Button>
+
 </LinearLayout>

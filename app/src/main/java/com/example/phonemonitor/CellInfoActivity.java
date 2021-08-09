@@ -62,13 +62,14 @@ public class CellInfoActivity extends AppCompatActivity {
                         Intent intent = new Intent();
                         intent.setClass(CellInfoActivity.this, CellInfoService.class);
                         stopService(intent);
+                        listView.clearAnimation();
                     }
                 }
             });
         }
         else{
             toggleButton.setChecked(true);
-            listView.setAdapter(new CellInfoAdapter(CellInfoService.getInstance().getLastCellInfoBeans(), this));
+            showCellData(CellInfoService.getInstance().getLastCellInfoBeans());
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
                     if(isChecked){
@@ -82,6 +83,7 @@ public class CellInfoActivity extends AppCompatActivity {
                         intent.setClass(CellInfoActivity.this, CellInfoService.class);
                         Toast.makeText(CellInfoActivity.this, "Service stopped", Toast.LENGTH_SHORT).show();
                         stopService(intent);
+                        listView.clearAnimation();
                     }
                 }
             });
@@ -129,8 +131,8 @@ public class CellInfoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        cellInfoBeans.clear();
-//        instance = null;
+        cellInfoBeans.clear();
+        instance = null;
 //        Toast.makeText(CellInfoActivity.this, "Destroy", Toast.LENGTH_SHORT).show();
     }
 

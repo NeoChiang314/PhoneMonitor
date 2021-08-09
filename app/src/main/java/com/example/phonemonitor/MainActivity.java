@@ -2,10 +2,8 @@ package com.example.phonemonitor;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,17 +18,6 @@ public class MainActivity extends AppCompatActivity {
 //        Toast.makeText(MainActivity.this, "Create", Toast.LENGTH_SHORT).show();
         instance = this;
         setContentView(R.layout.activity_main);
-
-//        listView = findViewById(R.id.cellInfo);
-//
-//        if (CellInfoService.getInstance() == null) {
-//            Intent intent = new Intent();
-//            intent.setClass(this, CellInfoService.class);
-//            this.startService(intent);
-//        }
-//        else{
-//            listView.setAdapter(new CellInfoAdapter(CellInfoService.getInstance().getLastCellInfoBeans(), this));
-//        }
     }
 
     @Override
@@ -65,5 +52,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void startCellInfoActivity(View view){
         startActivity(new Intent(this, CellInfoActivity.class));
+    }
+
+    public void startGpsActivity(View view){
+        startActivity(new Intent(this, GpsActivity.class));
     }
 }

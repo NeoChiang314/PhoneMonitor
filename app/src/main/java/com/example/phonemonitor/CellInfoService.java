@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.telephony.SignalStrength;
 import android.content.Context;
 import android.telephony.CellInfo;
-import android.telephony.CellInfoLte;
 import android.telephony.TelephonyManager;
 import android.telephony.PhoneStateListener;
 import android.widget.Toast;
@@ -86,20 +85,23 @@ public class CellInfoService extends Service {
             try{
                 cellInfoList = this.telephonyManager.getAllCellInfo();
                 for (CellInfo cellInfo : cellInfoList) {
-                    if (cellInfo instanceof CellInfoLte) {
-                        CellInfoBean cellInfoBean = new CellInfoBean();
-                        cellInfoBean.setCellRSRP(((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp());
-                        cellInfoBean.setCellRSRQ(((CellInfoLte) cellInfo).getCellSignalStrength().getRsrq());
-                        cellInfoBean.setCellMcc(((CellInfoLte) cellInfo).getCellIdentity().getMccString());
-                        cellInfoBean.setCellMnc(((CellInfoLte) cellInfo).getCellIdentity().getMncString());
-                        cellInfoBean.setCellPci(((CellInfoLte) cellInfo).getCellIdentity().getPci());
-                        cellInfoBean.setCellTac(((CellInfoLte) cellInfo).getCellIdentity().getTac());
-                        cellInfoBean.setConnectionCode(cellInfo.getCellConnectionStatus());
-                        cellInfoBeans.add(cellInfoBean);
-                    }
+
+//                    if (cellInfo instanceof CellInfoLte) {
+//                        CellInfoBean cellInfoBean = new CellInfoBean();
+//                        cellInfoBean.loadCellInfo(cellInfo);
+//                        cellInfoBeans.add(cellInfoBean);
+//                    }
+
+                    CellInfoBean cellInfoBean = new CellInfoBean();
+                    cellInfoBean.loadCellInfo(cellInfo);
+                    cellInfoBeans.add(cellInfoBean);
                 }
                 instance.lastCellInfoBeans = cellInfoBeans;
-                CellInfoActivity.getInstance().showCellData(cellInfoBeans);
+
+                if (CellInfoService.getInstance() != null) {
+                    CellInfoActivity.getInstance().setCellInfoBeans(cellInfoBeans);
+                    CellInfoActivity.getInstance().showCellData(cellInfoBeans);
+                }
             } catch (Exception e) {
                 Toast.makeText(CellInfoService.this, "Phone states measurement failed", Toast.LENGTH_SHORT).show();
             }

@@ -18,7 +18,9 @@
         </activity>
 
         <activity android:name=".CellInfoActivity"/>
+        <activity android:name=".GpsActivity"/>
         <service android:name=".CellInfoService"/>
+        <service android:name=".GpsService"/>
 
     </application>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

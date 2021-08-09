@@ -1,9 +1,16 @@
 package com.example.phonemonitor;
 
 import android.telephony.CellInfo;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoNr;
+import android.telephony.CellInfoTdscdma;
+import android.telephony.CellInfoWcdma;
 
 public class CellInfoBean {
 
+    String cellType;
     int cellRSRP;
     int cellRSRQ;
     String cellMcc;
@@ -12,6 +19,73 @@ public class CellInfoBean {
     int cellTac;
     int connectionCode;
     String connectionType;
+
+    public void loadCellInfo (CellInfo cellInfo) {
+        if (cellInfo instanceof CellInfoLte){
+            this.setCellType("LTE cell");
+            this.setCellRSRP(((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp());
+            this.setCellRSRQ(((CellInfoLte) cellInfo).getCellSignalStrength().getRsrq());
+            this.setCellMcc(((CellInfoLte) cellInfo).getCellIdentity().getMccString());
+            this.setCellMnc(((CellInfoLte) cellInfo).getCellIdentity().getMncString());
+            this.setCellPci(((CellInfoLte) cellInfo).getCellIdentity().getPci());
+            this.setCellTac(((CellInfoLte) cellInfo).getCellIdentity().getTac());
+            this.setConnectionCode(cellInfo.getCellConnectionStatus());
+        }
+        else if (cellInfo instanceof CellInfoNr) {
+            this.setCellType("Nr cell");
+            this.setCellRSRP(0);
+            this.setCellRSRQ(0);
+            this.setCellMcc("Null");
+            this.setCellMnc("Null");
+            this.setCellPci(0);
+            this.setCellTac(0);
+            this.setConnectionCode(cellInfo.getCellConnectionStatus());
+        }
+        else if (cellInfo instanceof CellInfoGsm){
+            this.setCellType("Gsm cell");
+            this.setCellRSRP(0);
+            this.setCellRSRQ(0);
+            this.setCellMcc("Null");
+            this.setCellMnc("Null");
+            this.setCellPci(0);
+            this.setCellTac(0);
+            this.setConnectionCode(cellInfo.getCellConnectionStatus());
+        }
+        else if (cellInfo instanceof CellInfoCdma){
+            this.setCellType("Cdma cell");
+            this.setCellRSRP(0);
+            this.setCellRSRQ(0);
+            this.setCellMcc("Null");
+            this.setCellMnc("Null");
+            this.setCellPci(0);
+            this.setCellTac(0);
+            this.setConnectionCode(cellInfo.getCellConnectionStatus());
+        }
+        else if (cellInfo instanceof CellInfoWcdma) {
+            this.setCellType("Wcdma cell");
+            this.setCellRSRP(0);
+            this.setCellRSRQ(0);
+            this.setCellMcc("Null");
+            this.setCellMnc("Null");
+            this.setCellPci(0);
+            this.setCellTac(0);
+            this.setConnectionCode(cellInfo.getCellConnectionStatus());
+        }
+        else if (cellInfo instanceof CellInfoTdscdma) {
+            this.setCellType("Tdscdma cell");
+            this.setCellRSRP(0);
+            this.setCellRSRQ(0);
+            this.setCellMcc("Null");
+            this.setCellMnc("Null");
+            this.setCellPci(0);
+            this.setCellTac(0);
+            this.setConnectionCode(cellInfo.getCellConnectionStatus());
+        }
+    }
+
+    public String getCellType() { return cellType; }
+
+    public void setCellType(String cellType) { this.cellType = cellType; }
 
     public int getCellRSRP() {
         return cellRSRP;

@@ -39,6 +39,7 @@ public class CellInfoAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.list_cell_info, parent, false);
         }
+        TextView cellTypeText = convertView.findViewById(R.id.cellTypeView);
         TextView rsrpText = convertView.findViewById(R.id.rsrpView);
         TextView rsrqText = convertView.findViewById(R.id.rsrqView);
         TextView mccText = convertView.findViewById(R.id.mccView);
@@ -46,6 +47,7 @@ public class CellInfoAdapter extends BaseAdapter {
         TextView pciText = convertView.findViewById(R.id.pciView);
         TextView tacText = convertView.findViewById(R.id.tacView);
         TextView connectionText = convertView.findViewById(R.id.connectionView);
+        cellTypeText.setText(cellInfoBeans.get(position).getCellType());
         rsrpText.setText("RSRP value: " + String.valueOf(cellInfoBeans.get(position).cellRSRP));
         rsrqText.setText("RSRQ value: " + String.valueOf(cellInfoBeans.get(position).cellRSRQ));
         mccText.setText("Cell Mcc: " + cellInfoBeans.get(position).cellMcc);
