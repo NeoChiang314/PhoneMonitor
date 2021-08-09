@@ -39,7 +39,6 @@ public class CellInfoService extends Service {
     public void onCreate() {
         super.onCreate();
 //        Toast.makeText(CellInfoService.this, "Create", Toast.LENGTH_SHORT).show();
-//        count = 0;
         myPhoneStateListener = new MyPhoneStateListener();
         instance = this;
     }
@@ -69,7 +68,7 @@ public class CellInfoService extends Service {
     }
 
 
-    private class MyPhoneStateListener extends PhoneStateListener {
+    public class MyPhoneStateListener extends PhoneStateListener {
         @Override
         public void onSignalStrengthsChanged(SignalStrength signalStrength) {
             super.onSignalStrengthsChanged(signalStrength);
@@ -79,7 +78,8 @@ public class CellInfoService extends Service {
 
     public void getGeneralCellInfo() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MainActivity.FINE_LOCATION_REQUEST);
+            ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_NONE);
+            ActivityCompat.requestPermissions(CellInfoActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, CellInfoActivity.FINE_LOCATION_REQUEST);
         }
         else{
             cellInfoBeans.clear();
@@ -94,7 +94,7 @@ public class CellInfoService extends Service {
                         cellInfoBean.setCellMnc(((CellInfoLte) cellInfo).getCellIdentity().getMncString());
                         cellInfoBean.setCellPci(((CellInfoLte) cellInfo).getCellIdentity().getPci());
                         cellInfoBean.setCellTac(((CellInfoLte) cellInfo).getCellIdentity().getTac());
-                        cellInfoBean.setConnectionCode(((CellInfoLte) cellInfo).getCellConnectionStatus());
+                        cellInfoBean.setConnectionCode(cellInfo.getCellConnectionStatus());
                         cellInfoBeans.add(cellInfoBean);
                     }
                 }

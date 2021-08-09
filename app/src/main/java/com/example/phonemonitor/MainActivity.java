@@ -10,8 +10,6 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     public static MainActivity instance;
-    public static final int FINE_LOCATION_REQUEST = 1;
-
     public static MainActivity getInstance() {
         return instance;
     }
@@ -67,14 +65,5 @@ public class MainActivity extends AppCompatActivity {
 
     public void startCellInfoActivity(View view){
         startActivity(new Intent(this, CellInfoActivity.class));
-    }
-
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == FINE_LOCATION_REQUEST) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                CellInfoService.getInstance().getGeneralCellInfo();
-            }
-        }
     }
 }
