@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -57,12 +58,13 @@ public class CellInfoActivity extends AppCompatActivity {
                         Intent intent = new Intent();
                         intent.setClass(CellInfoActivity.this, CellInfoService.class);
                         startService(intent);
+                        listView.setVisibility(View.VISIBLE);
                     }
                     else{
                         Intent intent = new Intent();
                         intent.setClass(CellInfoActivity.this, CellInfoService.class);
                         stopService(intent);
-                        listView.clearAnimation();
+                        listView.setVisibility(View.INVISIBLE);
                     }
                 }
             });

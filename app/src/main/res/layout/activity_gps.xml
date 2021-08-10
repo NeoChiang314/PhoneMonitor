@@ -17,12 +17,19 @@
     </ToggleButton>
 
     <TextView
-        android:id="@+id/temp"
+        android:id="@+id/longitudeView"
         android:textSize="30dp"
         android:textColor="@color/white"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This function has not completed yet">
-    </TextView>>
+        android:layout_height="wrap_content">
+    </TextView>
+
+    <TextView
+        android:id="@+id/latitudeView"
+        android:textSize="30dp"
+        android:textColor="@color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </TextView>
 
 </LinearLayout>
