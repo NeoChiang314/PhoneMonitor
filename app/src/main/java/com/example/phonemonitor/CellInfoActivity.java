@@ -23,6 +23,7 @@ public class CellInfoActivity extends AppCompatActivity {
     List<CellInfoBean> cellInfoBeans = new ArrayList<>();
     ListView listView;
     ToggleButton toggleButton;
+    CellInfoAdapter cellInfoAdapter;
 
     public List<CellInfoBean> getCellInfoBeans() {
         return cellInfoBeans;
@@ -43,8 +44,6 @@ public class CellInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cell_info);
         listView = findViewById(R.id.cellInfo);
         toggleButton = findViewById(R.id.cellInfoToggleButton);
-
-
 
 //        Intent intent = new Intent();
 //        intent.setClass(this, CellInfoService.class);
@@ -77,15 +76,14 @@ public class CellInfoActivity extends AppCompatActivity {
                     if(isChecked){
                         Intent intent = new Intent();
                         intent.setClass(CellInfoActivity.this, CellInfoService.class);
-                        Toast.makeText(CellInfoActivity.this, "Service started", Toast.LENGTH_SHORT).show();
                         startService(intent);
+                        listView.setVisibility(View.VISIBLE);
                     }
                     else{
                         Intent intent = new Intent();
                         intent.setClass(CellInfoActivity.this, CellInfoService.class);
-                        Toast.makeText(CellInfoActivity.this, "Service stopped", Toast.LENGTH_SHORT).show();
                         stopService(intent);
-                        listView.clearAnimation();
+                        listView.setVisibility(View.INVISIBLE);
                     }
                 }
             });
@@ -139,7 +137,8 @@ public class CellInfoActivity extends AppCompatActivity {
     }
 
     public void showCellData (List<CellInfoBean> cellInfoBeans) {
-        listView.setAdapter(new CellInfoAdapter(cellInfoBeans, this));
+            cellInfoAdapter = new CellInfoAdapter(cellInfoBeans, this);
+            listView.setAdapter(cellInfoAdapter);
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

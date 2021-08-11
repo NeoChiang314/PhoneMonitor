@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,21 +34,49 @@ public class GpsActivity extends AppCompatActivity {
         longitudeText = findViewById(R.id.longitudeView);
         latitudeText = findViewById(R.id.latitudeView);
 
-        toggleButton.setChecked(false);
-        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
-                if(isChecked){
-                    Intent intent = new Intent();
-                    intent.setClass(GpsActivity.this, GpsService.class);
-                    startService(intent);
+        if (GpsService.getInstance() == null) {
+            toggleButton.setChecked(false);
+            toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
+                    if(isChecked){
+                        Intent intent = new Intent();
+                        intent.setClass(GpsActivity.this, GpsService.class);
+                        startService(intent);
+                        longitudeText.setVisibility(View.VISIBLE);
+                        latitudeText.setVisibility(View.VISIBLE);
+                    }
+                    else{
+                        Intent intent = new Intent();
+                        intent.setClass(GpsActivity.this, GpsService.class);
+                        stopService(intent);
+                        longitudeText.setVisibility(View.INVISIBLE);
+                        latitudeText.setVisibility(View.INVISIBLE);
+                    }
                 }
-                else{
-                    Intent intent = new Intent();
-                    intent.setClass(GpsActivity.this, GpsService.class);
-                    stopService(intent);
+            });
+        }
+        else {
+            showGpsData(GpsService.getInstance().longitude, GpsService.getInstance().latitude);
+            toggleButton.setChecked(true);
+            toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
+                    if(isChecked){
+                        Intent intent = new Intent();
+                        intent.setClass(GpsActivity.this, GpsService.class);
+                        startService(intent);
+                        longitudeText.setVisibility(View.VISIBLE);
+                        latitudeText.setVisibility(View.VISIBLE);
+                    }
+                    else{
+                        Intent intent = new Intent();
+                        intent.setClass(GpsActivity.this, GpsService.class);
+                        stopService(intent);
+                        longitudeText.setVisibility(View.INVISIBLE);
+                        latitudeText.setVisibility(View.INVISIBLE);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override

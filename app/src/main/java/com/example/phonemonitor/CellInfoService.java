@@ -86,19 +86,17 @@ public class CellInfoService extends Service {
                 cellInfoList = this.telephonyManager.getAllCellInfo();
                 for (CellInfo cellInfo : cellInfoList) {
 
-//                    if (cellInfo instanceof CellInfoLte) {
-//                        CellInfoBean cellInfoBean = new CellInfoBean();
-//                        cellInfoBean.loadCellInfo(cellInfo);
-//                        cellInfoBeans.add(cellInfoBean);
-//                    }
-
                     CellInfoBean cellInfoBean = new CellInfoBean();
                     cellInfoBean.loadCellInfo(cellInfo);
                     cellInfoBeans.add(cellInfoBean);
                 }
                 instance.lastCellInfoBeans = cellInfoBeans;
 
-                if (CellInfoService.getInstance() != null) {
+                if (GpsService.getInstance() != null) {
+                    MainService.getInstance().updateDataByTimeList(new DataByTimeBean(GpsService.getInstance().longitude, GpsService.getInstance().latitude));
+                }
+
+                if (CellInfoActivity.getInstance() != null) {
                     CellInfoActivity.getInstance().setCellInfoBeans(cellInfoBeans);
                     CellInfoActivity.getInstance().showCellData(cellInfoBeans);
                 }

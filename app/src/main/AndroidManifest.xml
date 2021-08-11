@@ -19,6 +19,7 @@
 
         <activity android:name=".CellInfoActivity"/>
         <activity android:name=".GpsActivity"/>
+        <service android:name=".MainService"/>
         <service android:name=".CellInfoService"/>
         <service android:name=".GpsService"/>
 

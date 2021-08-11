@@ -74,7 +74,10 @@ public class GpsService extends Service {
         else{
             longitude = loc.getLongitude();
             latitude = loc.getLatitude();
-            GpsActivity.getInstance().showGpsData(longitude, latitude);
+
+            if (GpsActivity.getInstance() != null) {
+                GpsActivity.getInstance().showGpsData(longitude, latitude);
+            }
         }
     }
 }
