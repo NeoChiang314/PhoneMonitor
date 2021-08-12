@@ -9,6 +9,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -41,7 +42,7 @@ public class GpsService extends Service {
             ActivityCompat.requestPermissions(GpsActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, GpsActivity.FINE_LOCATION_REQUEST);
         }
         else{
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, myLocationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 1, myLocationListener);
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -62,6 +63,8 @@ public class GpsService extends Service {
 
         @Override
         public void onLocationChanged (Location loc){
+
+//            Toast.makeText(GpsService.this, "Location updated", Toast.LENGTH_SHORT).show();
             getLocationInfo(loc);
         }
     }
@@ -74,6 +77,10 @@ public class GpsService extends Service {
         else{
             longitude = loc.getLongitude();
             latitude = loc.getLatitude();
+
+            if (CellInfoService.getInstance() != null) {
+                MainService.getInstance().updateDataByTimeList(new DataByTimeBean(longitude, latitude, CellInfoService.getInstance().getLastCellInfoBeans()));
+            }
 
             if (GpsActivity.getInstance() != null) {
                 GpsActivity.getInstance().showGpsData(longitude, latitude);

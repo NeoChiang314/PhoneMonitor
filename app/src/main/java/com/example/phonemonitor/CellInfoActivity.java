@@ -45,10 +45,6 @@ public class CellInfoActivity extends AppCompatActivity {
         listView = findViewById(R.id.cellInfo);
         toggleButton = findViewById(R.id.cellInfoToggleButton);
 
-//        Intent intent = new Intent();
-//        intent.setClass(this, CellInfoService.class);
-//        startService(intent);
-
         if (CellInfoService.getInstance() == null) {
             toggleButton.setChecked(false);
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
@@ -94,20 +90,12 @@ public class CellInfoActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
 
-//        savedInstanceState.putBoolean("MyBoolean", true);
-//        savedInstanceState.putDouble("myDouble", 1.9);
-//        savedInstanceState.putInt("MyInt", 1);
-//        savedInstanceState.putString("MyString", "Welcome back to Android");
     }
 
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-//        boolean myBoolean = savedInstanceState.getBoolean("MyBoolean");
-//        double myDouble = savedInstanceState.getDouble("myDouble");
-//        int myInt = savedInstanceState.getInt("MyInt");
-//        String myString = savedInstanceState.getString("MyString");
     }
 
     @Override

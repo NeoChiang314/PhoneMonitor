@@ -9,11 +9,13 @@ public class DataByTimeBean {
     double longitude;
     double latitude;
     List<CellInfoBean> cellInfoBeans;
+    int position;
 
-    public DataByTimeBean(double longitude, double latitude){
+    public DataByTimeBean(double longitude, double latitude, List<CellInfoBean> cellInfoBeans){
         setTime();
         this.longitude = longitude;
         this.latitude = latitude;
+        this.cellInfoBeans = cellInfoBeans;
     }
 
     public void setTime(){
@@ -43,5 +45,21 @@ public class DataByTimeBean {
 
     public void setLatitude(int latitude) {
         this.latitude = latitude;
+    }
+
+    public List<CellInfoBean> getCellInfoBeans() {
+        return cellInfoBeans;
+    }
+
+    public void setCellInfoBeans(List<CellInfoBean> cellInfoBeans) {
+        this.cellInfoBeans = cellInfoBeans;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 }

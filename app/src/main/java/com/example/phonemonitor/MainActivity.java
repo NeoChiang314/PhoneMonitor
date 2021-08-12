@@ -4,7 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,19 +62,22 @@ public class MainActivity extends AppCompatActivity {
 //        Toast.makeText(MainActivity.this, "Destroy", Toast.LENGTH_SHORT).show();
     }
 
-    public void updateDataByTimeView(DataByTimeBean dataByTimeBean){
+    public void updateDataByTimeView(){
         if (dataByTimeAdapter == null){
             dataByTimeAdapter = new DataByTimeAdapter(MainService.getInstance().dataByTimeBeans, this);
             listView.setAdapter(dataByTimeAdapter);
-        }
-        else {
-            dataByTimeAdapter.add(dataByTimeBean);
-        }
-    }
 
-//    public void showCellData (List<CellInfoBean> cellInfoBeans) {
-//        listView.setAdapter(new CellInfoAdapter(cellInfoBeans, this));
-//    }
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener (){
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    MainService.getInstance().setPosition(position);
+                    startActivity(new Intent(MainActivity.this, DataUnitActivity.class));
+                }
+            });
+        }
+
+        dataByTimeAdapter.notifyDataSetChanged();
+    }
 
     public void startCellInfoActivity(View view){
         startActivity(new Intent(this, CellInfoActivity.class));

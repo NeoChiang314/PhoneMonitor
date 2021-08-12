@@ -37,7 +37,9 @@
     <ListView
         android:id="@+id/dataByTime"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll">
 
     </ListView>
 

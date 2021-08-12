@@ -11,12 +11,20 @@ import java.util.List;
 
 public class MainService extends Service {
 
+    int position;
     public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
-    List<DataByTimeBean> updateDataByTimeBeans = new ArrayList<>();
 
     public static MainService getInstance() {
         return instance;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 
     @Override
@@ -45,24 +53,10 @@ public class MainService extends Service {
     }
 
     public void updateDataByTimeList(DataByTimeBean dataByTimeBean) {
+        dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
         dataByTimeBeans.add(dataByTimeBean);
-
-//        if (MainActivity.getInstance() != null) {
-//            MainActivity.getInstance().updateDataByTimeView(dataByTimeBean);
-//        }
-
         if (MainActivity.getInstance() != null) {
-            if (updateDataByTimeBeans != null) {
-                for (DataByTimeBean dataByTimeBean1 : updateDataByTimeBeans){
-                    MainActivity.getInstance().updateDataByTimeView(dataByTimeBean1);
-                }
-                updateDataByTimeBeans.clear();
-            }
-            MainActivity.getInstance().updateDataByTimeView(dataByTimeBean);
+            MainActivity.getInstance().updateDataByTimeView();
         }
-        else {
-            updateDataByTimeBeans.add(dataByTimeBean);
-        }
-
     }
 }

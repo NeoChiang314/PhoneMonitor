@@ -38,19 +38,31 @@ public class DataByTimeAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
+        ViewHolder viewHolder = null;
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.list_data_by_time, parent, false);
+            viewHolder = new ViewHolder();
+            viewHolder.dataTimeList = (TextView) convertView.findViewById(R.id.dataTimeList);
+            convertView.setTag(viewHolder);
         }
-        TextView dataTimeList = convertView.findViewById(R.id.dataTimeList);
-        dataTimeList.setText(dataByTimeBeans.get(position).currentTime);
+        else {
+            viewHolder = (ViewHolder)convertView.getTag();
+        }
+        viewHolder.dataTimeList.setText(dataByTimeBeans.get(position).currentTime);
         return convertView;
     }
 
-    public void add(DataByTimeBean dataByTimeBean) {
-        if (dataByTimeBeans == null) {
-            dataByTimeBeans = new LinkedList<>();
-        }
-        dataByTimeBeans.add(dataByTimeBean);
-        notifyDataSetChanged();
+    private class ViewHolder{
+        TextView dataTimeList;
     }
+
+//    public void add(DataByTimeBean dataByTimeBean) {
+//        if (dataByTimeBeans == null) {
+//            dataByTimeBeans = new LinkedList<>();
+//        }
+//        dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
+//        dataByTimeBeans.add(dataByTimeBean);
+//        notifyDataSetChanged();
+//    }
 }
