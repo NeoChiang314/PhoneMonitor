@@ -26,8 +26,8 @@ public class DataUnitActivity extends AppCompatActivity {
         cellInfoList = findViewById(R.id.dataCellInfo);
 
         dataTimeText.setText(dataByTimeBean.currentTime);
-        dataLongitudeText.setText(String.valueOf(dataByTimeBean.longitude));
-        dataLatitudeText.setText(String.valueOf(dataByTimeBean.latitude));
+        dataLongitudeText.setText("Longitude:\n" + String.valueOf(dataByTimeBean.longitude));
+        dataLatitudeText.setText("Latitude:\n" + String.valueOf(dataByTimeBean.latitude));
         cellInfoAdapter = new CellInfoAdapter(dataByTimeBean.cellInfoBeans, this);
         cellInfoList.setAdapter(cellInfoAdapter);
     }

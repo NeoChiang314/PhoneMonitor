@@ -54,7 +54,7 @@ public class CellInfoAdapter extends BaseAdapter {
         mncText.setText("Cell Mnc: " + cellInfoBeans.get(position).cellMnc);
         pciText.setText("Cell Pci: " + String.valueOf(cellInfoBeans.get(position).cellPci));
         tacText.setText("Cell Tac: " + String.valueOf(cellInfoBeans.get(position).cellTac));
-        connectionText.setText("Connection type: " + cellInfoBeans.get(position).connectionType);
+        connectionText.setText("Connection type: " + cellInfoBeans.get(position).connectionType + "\n\n");
         return convertView;
     }
 }

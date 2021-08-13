@@ -102,8 +102,8 @@ public class GpsActivity extends AppCompatActivity {
     }
 
     public void showGpsData (double longitude, double latitude) {
-        longitudeText.setText("Longitude: " + String.valueOf(longitude));
-        latitudeText.setText("Latitude: " + String.valueOf(latitude));
+        longitudeText.setText("Longitude:\n" + String.valueOf(longitude));
+        latitudeText.setText("Latitude:\n" + String.valueOf(latitude));
     }
 
     @SuppressLint("MissingPermission")
