@@ -94,6 +94,7 @@ public class CellInfoService extends Service {
 //                if (GpsService.getInstance() != null) {
 //                    MainService.getInstance().updateDataByTimeList(new DataByTimeBean(GpsService.getInstance().longitude, GpsService.getInstance().latitude));
 //                }
+//                MainService.getInstance().setCellInfoBeans(cellInfoBeans);
 
                 if (CellInfoActivity.getInstance() != null) {
                     CellInfoActivity.getInstance().setCellInfoBeans(cellInfoBeans);

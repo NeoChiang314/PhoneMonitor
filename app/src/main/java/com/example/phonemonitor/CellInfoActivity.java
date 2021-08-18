@@ -66,7 +66,7 @@ public class CellInfoActivity extends AppCompatActivity {
         }
         else{
             toggleButton.setChecked(true);
-            showCellData(CellInfoService.getInstance().getLastCellInfoBeans());
+            showCellData(MainService.getInstance().cellInfoBeans);
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
                     if(isChecked){

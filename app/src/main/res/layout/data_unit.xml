@@ -30,6 +30,22 @@
     </TextView>
 
     <TextView
+        android:id="@+id/maxRSRPView"
+        android:textSize="20dp"
+        android:textColor="@color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </TextView>
+
+    <TextView
+        android:id="@+id/maxPCIView"
+        android:textSize="20dp"
+        android:textColor="@color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </TextView>
+
+    <TextView
         android:id="@+id/CellInfoTitleView"
         android:textSize="20dp"
         android:textColor="@color/white"

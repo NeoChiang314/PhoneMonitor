@@ -78,12 +78,12 @@ public class GpsService extends Service {
             longitude = loc.getLongitude();
             latitude = loc.getLatitude();
 
-            if (CellInfoService.getInstance() != null) {
-                MainService.getInstance().updateDataByTimeList(new DataByTimeBean(longitude, latitude, CellInfoService.getInstance().getLastCellInfoBeans()));
-            }
-
             if (GpsActivity.getInstance() != null) {
                 GpsActivity.getInstance().showGpsData(longitude, latitude);
+            }
+
+            if (CellInfoService.getInstance() != null) {
+                MainService.getInstance().updateDataByTimeList();
             }
         }
     }

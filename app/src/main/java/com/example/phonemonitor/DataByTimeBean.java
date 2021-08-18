@@ -1,5 +1,6 @@
 package com.example.phonemonitor;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -15,7 +16,10 @@ public class DataByTimeBean {
         setTime();
         this.longitude = longitude;
         this.latitude = latitude;
-        this.cellInfoBeans = cellInfoBeans;
+        this.cellInfoBeans = new ArrayList<>();
+        for (CellInfoBean cellInfoBean: cellInfoBeans){
+            this.cellInfoBeans.add(cellInfoBean);
+        }
     }
 
     public void setTime(){

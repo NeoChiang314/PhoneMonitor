@@ -8,6 +8,7 @@ import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.database.sqlite.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
         if (dataByTimeAdapter == null){
             dataByTimeAdapter = new DataByTimeAdapter(MainService.getInstance().dataByTimeBeans, this);
             listView.setAdapter(dataByTimeAdapter);
-
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener (){
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-
         dataByTimeAdapter.notifyDataSetChanged();
     }
 

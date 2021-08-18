@@ -2,6 +2,8 @@ package com.example.phonemonitor;
 
 import android.app.Service;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
@@ -14,6 +16,7 @@ public class MainService extends Service {
     int position;
     public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
+    List<CellInfoBean> cellInfoBeans = new ArrayList<>();
 
     public static MainService getInstance() {
         return instance;
@@ -31,6 +34,9 @@ public class MainService extends Service {
     public void onCreate() {
         super.onCreate();
         instance = this;
+
+//        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
+//        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
     }
 
     @Override
@@ -52,11 +58,57 @@ public class MainService extends Service {
         return null;
     }
 
-    public void updateDataByTimeList(DataByTimeBean dataByTimeBean) {
+//    public void setCellInfoBeans (List<CellInfoBean> cellInfoBeans){
+//        this.cellInfoBeans = cellInfoBeans;
+//    }
+
+    public void updateDataByTimeList() {
+        DataByTimeBean dataByTimeBean = new DataByTimeBean(GpsService.getInstance().longitude, GpsService.getInstance().latitude, CellInfoService.getInstance().getLastCellInfoBeans());
         dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
         dataByTimeBeans.add(dataByTimeBean);
+//        insert(dataByTimeBean);
         if (MainActivity.getInstance() != null) {
             MainActivity.getInstance().updateDataByTimeView();
         }
+    }
+
+    public void insert (DataByTimeBean dataByTimeBean) {
+        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
+        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
+
+        if (writableDatabase.isOpen()) {
+            CellInfoBean maxCellInfoBean = getMaxSignalCell(dataByTimeBean);
+            String sql = "insert into data (time, longitude, latitude, RSRP, RSRQ, PCI) values (" + "'" + dataByTimeBean.getCurrentTime() + "','" + dataByTimeBean.getLongitude() + "','" + dataByTimeBean.getLatitude()
+                    + "','" + maxCellInfoBean.getCellRSRP() + "','" + maxCellInfoBean.getCellRSRQ() + "','" + maxCellInfoBean.getCellPci() +  "')";
+            writableDatabase.execSQL(sql);
+        }
+        writableDatabase.close();
+    }
+
+    public CellInfoBean getMaxSignalCell (DataByTimeBean dataByTimeBean){
+        int maxRSRP = -1000;
+        int maxRSRQ = -1000;
+        CellInfoBean maxCellInfoBean = null;
+//        int maxIndex = 0;
+//        int index = 0;
+        for (CellInfoBean cellInfoBean: dataByTimeBean.cellInfoBeans){
+            if (cellInfoBean.getCellRSRP() > maxRSRP){
+//                maxIndex = index;
+                maxRSRP = cellInfoBean.getCellRSRP();
+                maxRSRQ = cellInfoBean.getCellRSRQ();
+                maxCellInfoBean = cellInfoBean;
+            }
+            else if (cellInfoBean.getCellRSRP() == maxRSRP){
+                if (cellInfoBean.getCellRSRQ() > maxRSRQ){
+//                    maxIndex = index;
+                    maxRSRP = cellInfoBean.getCellRSRP();
+                    maxRSRQ = cellInfoBean.getCellRSRQ();
+                    maxCellInfoBean = cellInfoBean;
+                }
+            }
+//            index ++;
+        }
+//        return dataByTimeBean.cellInfoBeans.get(maxIndex);
+        return maxCellInfoBean;
     }
 }
