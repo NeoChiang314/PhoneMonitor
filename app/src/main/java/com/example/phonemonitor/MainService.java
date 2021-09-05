@@ -66,7 +66,7 @@ public class MainService extends Service {
         DataByTimeBean dataByTimeBean = new DataByTimeBean(GpsService.getInstance().longitude, GpsService.getInstance().latitude, CellInfoService.getInstance().getLastCellInfoBeans());
         dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
         dataByTimeBeans.add(dataByTimeBean);
-//        insert(dataByTimeBean);
+        insert(dataByTimeBean);
         if (MainActivity.getInstance() != null) {
             MainActivity.getInstance().updateDataByTimeView();
         }
