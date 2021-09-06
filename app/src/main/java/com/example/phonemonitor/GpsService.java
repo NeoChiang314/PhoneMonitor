@@ -29,20 +29,19 @@ public class GpsService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        instance = this;
-        myLocationListener = new MyLocationListener();
     }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
+        instance = this;
+        myLocationListener = new MyLocationListener();
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(GpsActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, GpsActivity.FINE_LOCATION_REQUEST);
         }
         else{
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 1, myLocationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, myLocationListener);
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -81,10 +80,10 @@ public class GpsService extends Service {
             if (GpsActivity.getInstance() != null) {
                 GpsActivity.getInstance().showGpsData(longitude, latitude);
             }
-
-            if (CellInfoService.getInstance() != null) {
-                MainService.getInstance().updateDataByTimeList();
-            }
+//
+//            if (CellInfoService.getInstance() != null) {
+//                MainService.getInstance().updateDataByTimeList();
+//            }
         }
     }
 }

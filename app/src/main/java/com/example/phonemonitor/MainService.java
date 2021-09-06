@@ -1,22 +1,36 @@
 package com.example.phonemonitor;
 
+import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Color;
+import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainService extends Service {
 
+    private static final String CHANNEL_ID = "1";
     int position;
     public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
     List<CellInfoBean> cellInfoBeans = new ArrayList<>();
+    final Handler handler = new Handler();
+    final int delay = 5000; // 5000 milliseconds == 5 second
 
     public static MainService getInstance() {
         return instance;
@@ -32,17 +46,48 @@ public class MainService extends Service {
 
     @Override
     public void onCreate() {
-        super.onCreate();
-        instance = this;
 
-//        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
-//        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
+        createNotificationChannel();
+        super.onCreate();
     }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
+        instance = this;
 
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.notification_icon)
+                .setContentTitle("test")
+                .setContentText("test")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(false)
+                .setDefaults(Notification.DEFAULT_ALL);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+// notificationId is a unique int for each notification that you must define
+        notificationManager.notify(001, builder.build());
+
+        handler.postDelayed(new Runnable() {
+            public void run() {
+
+                if ((CellInfoService.getInstance() != null) && (GpsService.getInstance() != null)) {
+                    updateDataByTimeList();
+                }
+
+                handler.postDelayed(this, delay);
+            }
+        }, delay);
+
+
+//        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
+//        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -66,7 +111,7 @@ public class MainService extends Service {
         DataByTimeBean dataByTimeBean = new DataByTimeBean(GpsService.getInstance().longitude, GpsService.getInstance().latitude, CellInfoService.getInstance().getLastCellInfoBeans());
         dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
         dataByTimeBeans.add(dataByTimeBean);
-        insert(dataByTimeBean);
+//        insert(dataByTimeBean);
         if (MainActivity.getInstance() != null) {
             MainActivity.getInstance().updateDataByTimeView();
         }
@@ -83,6 +128,22 @@ public class MainService extends Service {
             writableDatabase.execSQL(sql);
         }
         writableDatabase.close();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            channel.setShowBadge(true);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     public CellInfoBean getMaxSignalCell (DataByTimeBean dataByTimeBean){
@@ -112,3 +173,5 @@ public class MainService extends Service {
         return maxCellInfoBean;
     }
 }
+
+

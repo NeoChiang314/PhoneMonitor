@@ -38,13 +38,13 @@ public class CellInfoService extends Service {
     public void onCreate() {
         super.onCreate();
 //        Toast.makeText(CellInfoService.this, "Create", Toast.LENGTH_SHORT).show();
-        myPhoneStateListener = new MyPhoneStateListener();
-        instance = this;
     }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 //        Toast.makeText(CellInfoService.this, "Start", Toast.LENGTH_SHORT).show();
+        instance = this;
+        myPhoneStateListener = new MyPhoneStateListener();
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         return super.onStartCommand(intent, flags, startId);
