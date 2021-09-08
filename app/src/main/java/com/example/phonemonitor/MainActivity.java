@@ -40,23 +40,6 @@ public class MainActivity extends AppCompatActivity {
             intent.setClass(MainActivity.this, MainService.class);
             startService(intent);
         }
-
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MainService.CHANNEL_ID)
-                .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle("test")
-                .setContentText("test")
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(false);
-
-        Notification notification = builder.build();
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(001, notification);
     }
 
     @Override

@@ -84,7 +84,7 @@ public class MainService extends Service {
 
         instance = this;
         cellInfoMonitorStatus = false;
-//        startForegroundService();
+        startForegroundService();
         startDataRecording();
 
 //        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
@@ -127,17 +127,17 @@ public class MainService extends Service {
     }
 
     public void startForegroundService(){
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+//        Intent notificationIntent = new Intent(this, MainActivity.class);
+//        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.notification_icon)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.notification_icon))
+                .setSmallIcon(R.drawable.ic_signal)
+//                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.notification_icon))
                 .setContentTitle("test")
                 .setContentText("test")
                 .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setContentIntent(pendingIntent)
+//                .setContentIntent(pendingIntent)
                 .setAutoCancel(false);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
