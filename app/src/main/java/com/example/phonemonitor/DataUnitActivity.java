@@ -10,7 +10,7 @@ public class DataUnitActivity extends AppCompatActivity {
 
     DataByTimeBean dataByTimeBean;
     CellInfoAdapter cellInfoAdapter;
-    TextView dataTimeText, dataLongitudeText, dataLatitudeText, maxRSRPText, maxPCIText;
+    TextView dataTimeText, dataLongitudeText, dataLatitudeText, servingRSRPText, servingTACText;
     ListView cellInfo;
 
     @Override
@@ -23,15 +23,15 @@ public class DataUnitActivity extends AppCompatActivity {
         dataTimeText = findViewById(R.id.dataTime);
         dataLongitudeText = findViewById(R.id.dataLongitudeView);
         dataLatitudeText = findViewById(R.id.dataLatitudeView);
-        maxRSRPText = findViewById(R.id.maxRSRPView);
-        maxPCIText = findViewById(R.id.maxPCIView);
+        servingRSRPText = findViewById(R.id.servingRSRPView);
+        servingTACText = findViewById(R.id.servingTACView);
         cellInfo = findViewById(R.id.dataCellInfo);
 
         dataTimeText.setText(dataByTimeBean.currentTime);
         dataLongitudeText.setText("Longitude:\n" + String.valueOf(dataByTimeBean.longitude));
         dataLatitudeText.setText("Latitude:\n" + String.valueOf(dataByTimeBean.latitude));
-        maxRSRPText.setText("Max RSRP: " + String.valueOf(MainService.getInstance().getMaxSignalCell(dataByTimeBean).getCellRSRP()));
-        maxPCIText.setText("Cell's PCI: " + String.valueOf(MainService.getInstance().getMaxSignalCell(dataByTimeBean).getCellPci()));
+        servingRSRPText.setText("Serving cell RSRP: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellRSRP()));
+        servingTACText.setText("Cell's TAC: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellTac()));
         cellInfoAdapter = new CellInfoAdapter(dataByTimeBean.cellInfoBeans, this);
         cellInfo.setAdapter(cellInfoAdapter);
     }

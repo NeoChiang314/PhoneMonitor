@@ -30,7 +30,7 @@
     </TextView>
 
     <TextView
-        android:id="@+id/maxRSRPView"
+        android:id="@+id/servingRSRPView"
         android:textSize="20dp"
         android:textColor="@color/white"
         android:layout_width="wrap_content"
@@ -38,7 +38,7 @@
     </TextView>
 
     <TextView
-        android:id="@+id/maxPCIView"
+        android:id="@+id/servingTACView"
         android:textSize="20dp"
         android:textColor="@color/white"
         android:layout_width="wrap_content"

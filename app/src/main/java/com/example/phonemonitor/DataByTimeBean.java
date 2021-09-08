@@ -17,9 +17,6 @@ public class DataByTimeBean {
         this.longitude = longitude;
         this.latitude = latitude;
         this.cellInfoBeans = new ArrayList<>(cellInfoBeans);
-//        for (CellInfoBean cellInfoBean: cellInfoBeans){
-//            this.cellInfoBeans.add(cellInfoBean);
-//        }
     }
 
     public void setTime(){
@@ -69,5 +66,14 @@ public class DataByTimeBean {
 
     public void setPosition(int position) {
         this.position = position;
+    }
+
+    public CellInfoBean getCellInfoBean(int index){
+        if (this.getCellInfoBeans() != null){
+            return this.cellInfoBeans.get(index);
+        }
+        else{
+            return null;
+        }
     }
 }

@@ -14,7 +14,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.telephony.CellInfo;
@@ -56,6 +60,16 @@ public class MainService extends Service {
     List<CellInfoBean> cellInfoBeans = new ArrayList<>();
 
 
+    //Variables for gps monitor
+    //
+    //
+    //
+    Boolean gpsMonitorStatus;
+    public double longitude, latitude;
+    LocationManager locationManager;
+    MyLocationListener myLocationListener;
+
+
     //Getters and setters
     //
     //
@@ -72,6 +86,7 @@ public class MainService extends Service {
     public Boolean isCellInfoMonitorOpen() {
         return cellInfoMonitorStatus;
     }
+    public Boolean isGpsMonitorOpen() {return gpsMonitorStatus; }
 
     @Override
     public void onCreate() {
@@ -84,6 +99,7 @@ public class MainService extends Service {
 
         instance = this;
         cellInfoMonitorStatus = false;
+        gpsMonitorStatus = false;
         startForegroundService();
         startDataRecording();
 
@@ -116,7 +132,7 @@ public class MainService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.channel_name);
             String description = getString(R.string.channel_description);
-            int importance = NotificationManager.IMPORTANCE_HIGH;
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
             channel.setShowBadge(true);
@@ -127,17 +143,17 @@ public class MainService extends Service {
     }
 
     public void startForegroundService(){
-//        Intent notificationIntent = new Intent(this, MainActivity.class);
-//        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_signal)
 //                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.notification_icon))
                 .setContentTitle("test")
                 .setContentText("test")
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-//                .setContentIntent(pendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
                 .setAutoCancel(false);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
@@ -155,7 +171,7 @@ public class MainService extends Service {
     public void startDataRecording(){
         handler.postDelayed(new Runnable() {
             public void run() {
-                if (isCellInfoMonitorOpen() && (GpsService.getInstance() != null)) {
+                if (isCellInfoMonitorOpen() && isGpsMonitorOpen()) {
                     updateDataByTimeList();
                 }
                 handler.postDelayed(this, delay);
@@ -164,7 +180,7 @@ public class MainService extends Service {
     }
 
     public void updateDataByTimeList() {
-        DataByTimeBean dataByTimeBean = new DataByTimeBean(GpsService.getInstance().getLongitude(), GpsService.getInstance().getLatitude(), cellInfoBeans);
+        DataByTimeBean dataByTimeBean = new DataByTimeBean(longitude, latitude, cellInfoBeans);
         dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
         dataByTimeBeans.add(dataByTimeBean);
 //        insert(dataByTimeBean);
@@ -173,18 +189,18 @@ public class MainService extends Service {
         }
     }
 
-    public void insert (DataByTimeBean dataByTimeBean) {
-        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
-        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
-
-        if (writableDatabase.isOpen()) {
-            CellInfoBean maxCellInfoBean = getMaxSignalCell(dataByTimeBean);
-            String sql = "insert into data (time, longitude, latitude, RSRP, RSRQ, PCI) values (" + "'" + dataByTimeBean.getCurrentTime() + "','" + dataByTimeBean.getLongitude() + "','" + dataByTimeBean.getLatitude()
-                    + "','" + maxCellInfoBean.getCellRSRP() + "','" + maxCellInfoBean.getCellRSRQ() + "','" + maxCellInfoBean.getCellPci() +  "')";
-            writableDatabase.execSQL(sql);
-        }
-        writableDatabase.close();
-    }
+//    public void insert (DataByTimeBean dataByTimeBean) {
+//        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
+//        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
+//
+//        if (writableDatabase.isOpen()) {
+//            CellInfoBean maxCellInfoBean = getMaxSignalCell(dataByTimeBean);
+//            String sql = "insert into data (time, longitude, latitude, RSRP, RSRQ, PCI) values (" + "'" + dataByTimeBean.getCurrentTime() + "','" + dataByTimeBean.getLongitude() + "','" + dataByTimeBean.getLatitude()
+//                    + "','" + maxCellInfoBean.getCellRSRP() + "','" + maxCellInfoBean.getCellRSRQ() + "','" + maxCellInfoBean.getCellPci() +  "')";
+//            writableDatabase.execSQL(sql);
+//        }
+//        writableDatabase.close();
+//    }
 
 
     //Methods for cell info monitor
@@ -192,10 +208,15 @@ public class MainService extends Service {
     //
     //
     public void startCellInfoMonitoring(){
-        myPhoneStateListener = new MyPhoneStateListener();
-        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        cellInfoMonitorStatus = true;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(CellInfoActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, CellInfoActivity.FINE_LOCATION_REQUEST);
+        }
+        else{
+            myPhoneStateListener = new MyPhoneStateListener();
+            telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+            cellInfoMonitorStatus = true;
+        }
     }
 
     public void stopCellInfoMonitoring(){
@@ -242,32 +263,67 @@ public class MainService extends Service {
         }
     }
 
-    public CellInfoBean getMaxSignalCell (DataByTimeBean dataByTimeBean){
-        int maxRSRP = -1000;
-        int maxRSRQ = -1000;
-        CellInfoBean maxCellInfoBean = null;
-//        int maxIndex = 0;
-//        int index = 0;
-        for (CellInfoBean cellInfoBean: dataByTimeBean.cellInfoBeans){
-            if (cellInfoBean.getCellRSRP() > maxRSRP){
-//                maxIndex = index;
-                maxRSRP = cellInfoBean.getCellRSRP();
-                maxRSRQ = cellInfoBean.getCellRSRQ();
-                maxCellInfoBean = cellInfoBean;
-            }
-            else if (cellInfoBean.getCellRSRP() == maxRSRP){
-                if (cellInfoBean.getCellRSRQ() > maxRSRQ){
-//                    maxIndex = index;
-                    maxRSRP = cellInfoBean.getCellRSRP();
-                    maxRSRQ = cellInfoBean.getCellRSRQ();
-                    maxCellInfoBean = cellInfoBean;
-                }
-            }
-//            index ++;
+    //Methods for gps monitor
+    //
+    //
+    //
+    public void startGpsMonitoring(){
+        myLocationListener = new MyLocationListener();
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(GpsActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, GpsActivity.FINE_LOCATION_REQUEST);
         }
-//        return dataByTimeBean.cellInfoBeans.get(maxIndex);
-        return maxCellInfoBean;
+        else{
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, myLocationListener);
+            gpsMonitorStatus = true;
+        }
     }
+
+    public void stopGpsMonitoring(){
+        locationManager.removeUpdates(myLocationListener);
+        gpsMonitorStatus = false;
+    }
+
+    public class MyLocationListener implements LocationListener {
+
+        @Override
+        public void onLocationChanged (Location loc){
+//            Toast.makeText(GpsService.this, "Location updated", Toast.LENGTH_SHORT).show();
+            getLocationInfo(loc);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+        @Override
+        public void onProviderEnabled(String provider) {}
+
+        @Override
+        public void onProviderDisabled(String provider) {}
+    }
+
+    public void getLocationInfo (Location loc) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            stopGpsMonitoring();
+            ActivityCompat.requestPermissions(GpsActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, GpsActivity.FINE_LOCATION_REQUEST);
+        }
+        else{
+            longitude = loc.getLongitude();
+            latitude = loc.getLatitude();
+
+            if (GpsActivity.getInstance() != null) {
+                GpsActivity.getInstance().showGpsData(longitude, latitude);
+            }
+        }
+    }
+
+
+
+
+    //Other methods
+    //
+    //
+    //
 }
 
 

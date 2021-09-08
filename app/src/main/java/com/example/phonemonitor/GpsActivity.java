@@ -34,21 +34,17 @@ public class GpsActivity extends AppCompatActivity {
         longitudeText = findViewById(R.id.longitudeView);
         latitudeText = findViewById(R.id.latitudeView);
 
-        if (GpsService.getInstance() == null) {
+        if (!MainService.getInstance().isGpsMonitorOpen()) {
             toggleButton.setChecked(false);
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
                     if(isChecked){
-                        Intent intent = new Intent();
-                        intent.setClass(GpsActivity.this, GpsService.class);
-                        startService(intent);
+                        MainService.getInstance().startGpsMonitoring();
                         longitudeText.setVisibility(View.VISIBLE);
                         latitudeText.setVisibility(View.VISIBLE);
                     }
                     else{
-                        Intent intent = new Intent();
-                        intent.setClass(GpsActivity.this, GpsService.class);
-                        stopService(intent);
+                        MainService.getInstance().stopGpsMonitoring();
                         longitudeText.setVisibility(View.INVISIBLE);
                         latitudeText.setVisibility(View.INVISIBLE);
                     }
@@ -56,21 +52,19 @@ public class GpsActivity extends AppCompatActivity {
             });
         }
         else {
-            showGpsData(GpsService.getInstance().longitude, GpsService.getInstance().latitude);
+            showGpsData(MainService.getInstance().longitude, MainService.getInstance().latitude);
             toggleButton.setChecked(true);
+            longitudeText.setVisibility(View.VISIBLE);
+            latitudeText.setVisibility(View.VISIBLE);
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
                     if(isChecked){
-                        Intent intent = new Intent();
-                        intent.setClass(GpsActivity.this, GpsService.class);
-                        startService(intent);
+                        MainService.getInstance().startGpsMonitoring();
                         longitudeText.setVisibility(View.VISIBLE);
                         latitudeText.setVisibility(View.VISIBLE);
                     }
                     else{
-                        Intent intent = new Intent();
-                        intent.setClass(GpsActivity.this, GpsService.class);
-                        stopService(intent);
+                        MainService.getInstance().stopGpsMonitoring();
                         longitudeText.setVisibility(View.INVISIBLE);
                         latitudeText.setVisibility(View.INVISIBLE);
                     }
@@ -112,7 +106,7 @@ public class GpsActivity extends AppCompatActivity {
         if (requestCode == FINE_LOCATION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(GpsActivity.this, "Fine location permission granted", Toast.LENGTH_SHORT).show();
-                GpsService.getInstance().locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, GpsService.getInstance().myLocationListener);
+                MainService.getInstance().startGpsMonitoring();
             }
             else {
                 Toast.makeText(GpsActivity.this, "Fine location permission rejected", Toast.LENGTH_SHORT).show();
