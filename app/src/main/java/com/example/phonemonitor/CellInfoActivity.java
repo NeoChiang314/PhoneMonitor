@@ -24,7 +24,6 @@ public class CellInfoActivity extends AppCompatActivity {
     ListView listView;
     ToggleButton toggleButton;
     CellInfoAdapter cellInfoAdapter;
-    Intent intent  = new Intent();
 
     public List<CellInfoBean> getCellInfoBeans() {
         return cellInfoBeans;
@@ -45,18 +44,17 @@ public class CellInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cell_info);
         listView = findViewById(R.id.cellInfo);
         toggleButton = findViewById(R.id.cellInfoToggleButton);
-        intent.setClass(CellInfoActivity.this, CellInfoService.class);
 
-        if (CellInfoService.getInstance() == null) {
+        if (!MainService.getInstance().isCellInfoMonitorOpen()) {
             toggleButton.setChecked(false);
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
                     if(isChecked){
-                        startService(intent);
+                        MainService.getInstance().startCellInfoMonitoring();
                         listView.setVisibility(View.VISIBLE);
                     }
                     else{
-                        stopService(intent);
+                        MainService.getInstance().stopCellInfoMonitoring();
                         listView.setVisibility(View.INVISIBLE);
                     }
                 }
@@ -69,11 +67,11 @@ public class CellInfoActivity extends AppCompatActivity {
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
                     if(isChecked){
-                        startService(intent);
+                        MainService.getInstance().startCellInfoMonitoring();
                         listView.setVisibility(View.VISIBLE);
                     }
                     else{
-                        stopService(intent);
+                        MainService.getInstance().stopCellInfoMonitoring();
                         listView.setVisibility(View.INVISIBLE);
                     }
                 }
@@ -84,7 +82,6 @@ public class CellInfoActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-
     }
 
     @Override
@@ -129,7 +126,7 @@ public class CellInfoActivity extends AppCompatActivity {
         if (requestCode == FINE_LOCATION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(CellInfoActivity.this, "Fine location permission granted", Toast.LENGTH_SHORT).show();
-                ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(CellInfoService.getInstance().myPhoneStateListener, CellInfoService.MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+                MainService.getInstance().startCellInfoMonitoring();
             }
             else {
                 Toast.makeText(CellInfoActivity.this, "Fine location permission rejected", Toast.LENGTH_SHORT).show();

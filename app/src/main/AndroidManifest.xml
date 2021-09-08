@@ -31,7 +31,10 @@
         <activity android:name=".GpsActivity" />
         <activity android:name=".DataUnitActivity" />
 
-        <service android:name=".MainService" />
+        <service
+            android:name=".MainService"
+            android:foregroundServiceType="location"/>
+
         <service android:name=".CellInfoService" />
         <service android:name=".GpsService" />
     </application>

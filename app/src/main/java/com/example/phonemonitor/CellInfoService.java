@@ -52,9 +52,9 @@ public class CellInfoService extends Service {
     public int onStartCommand(final Intent intent, int flags, int startId) {
 //        Toast.makeText(CellInfoService.this, "Start", Toast.LENGTH_SHORT).show();
         instance = this;
-        myPhoneStateListener = new MyPhoneStateListener();
-        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+//        myPhoneStateListener = new MyPhoneStateListener();
+//        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+//        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
 //        handler.postDelayed(new Runnable() {
 //            public void run() {
