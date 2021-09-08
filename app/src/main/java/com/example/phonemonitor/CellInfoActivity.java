@@ -24,6 +24,7 @@ public class CellInfoActivity extends AppCompatActivity {
     ListView listView;
     ToggleButton toggleButton;
     CellInfoAdapter cellInfoAdapter;
+    Intent intent  = new Intent();
 
     public List<CellInfoBean> getCellInfoBeans() {
         return cellInfoBeans;
@@ -44,20 +45,17 @@ public class CellInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cell_info);
         listView = findViewById(R.id.cellInfo);
         toggleButton = findViewById(R.id.cellInfoToggleButton);
+        intent.setClass(CellInfoActivity.this, CellInfoService.class);
 
         if (CellInfoService.getInstance() == null) {
             toggleButton.setChecked(false);
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
                     if(isChecked){
-                        Intent intent = new Intent();
-                        intent.setClass(CellInfoActivity.this, CellInfoService.class);
                         startService(intent);
                         listView.setVisibility(View.VISIBLE);
                     }
                     else{
-                        Intent intent = new Intent();
-                        intent.setClass(CellInfoActivity.this, CellInfoService.class);
                         stopService(intent);
                         listView.setVisibility(View.INVISIBLE);
                     }
@@ -66,18 +64,15 @@ public class CellInfoActivity extends AppCompatActivity {
         }
         else{
             toggleButton.setChecked(true);
+            listView.setVisibility(View.VISIBLE);
             showCellData(MainService.getInstance().cellInfoBeans);
             toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
                     if(isChecked){
-                        Intent intent = new Intent();
-                        intent.setClass(CellInfoActivity.this, CellInfoService.class);
                         startService(intent);
                         listView.setVisibility(View.VISIBLE);
                     }
                     else{
-                        Intent intent = new Intent();
-                        intent.setClass(CellInfoActivity.this, CellInfoService.class);
                         stopService(intent);
                         listView.setVisibility(View.INVISIBLE);
                     }

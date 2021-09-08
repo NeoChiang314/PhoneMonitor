@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -24,7 +25,7 @@ import java.util.List;
 
 public class MainService extends Service {
 
-    private static final String CHANNEL_ID = "1";
+    public static final String CHANNEL_ID = "1";
     int position;
     public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
@@ -56,23 +57,29 @@ public class MainService extends Service {
 
         instance = this;
 
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+//        Intent notificationIntent = new Intent(this, MainActivity.class);
+//        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+//
+//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+//                .setSmallIcon(R.drawable.notification_icon)
+//                .setContentTitle("test")
+//                .setContentText("test")
+//                .setPriority(NotificationCompat.PRIORITY_MAX)
+//                .setContentIntent(pendingIntent)
+//                .setAutoCancel(false);
+//
+//        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+//        notificationManager.notify(001, builder.build());
+//
+//        Boolean notiEnabled = notificationManager.areNotificationsEnabled();
+//        if (notiEnabled) {
+//            Toast.makeText(MainService.this, "Notification is enabled", Toast.LENGTH_SHORT).show();
+//        }
+//        else {
+//            Toast.makeText(MainService.this, "Notification is not enabled", Toast.LENGTH_SHORT).show();
+//        }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle("test")
-                .setContentText("test")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(false)
-                .setDefaults(Notification.DEFAULT_ALL);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-// notificationId is a unique int for each notification that you must define
-        notificationManager.notify(001, builder.build());
 
         handler.postDelayed(new Runnable() {
             public void run() {
@@ -108,7 +115,7 @@ public class MainService extends Service {
 //    }
 
     public void updateDataByTimeList() {
-        DataByTimeBean dataByTimeBean = new DataByTimeBean(GpsService.getInstance().longitude, GpsService.getInstance().latitude, CellInfoService.getInstance().getLastCellInfoBeans());
+        DataByTimeBean dataByTimeBean = new DataByTimeBean(GpsService.getInstance().getLongitude(), GpsService.getInstance().getLatitude(), CellInfoService.getInstance().getCellInfoBeans());
         dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
         dataByTimeBeans.add(dataByTimeBean);
 //        insert(dataByTimeBean);
@@ -131,19 +138,17 @@ public class MainService extends Service {
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.channel_name);
             String description = getString(R.string.channel_description);
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
             channel.setShowBadge(true);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
-        }
+//        }
     }
 
     public CellInfoBean getMaxSignalCell (DataByTimeBean dataByTimeBean){

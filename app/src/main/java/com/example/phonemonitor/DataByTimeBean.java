@@ -16,15 +16,19 @@ public class DataByTimeBean {
         setTime();
         this.longitude = longitude;
         this.latitude = latitude;
-        this.cellInfoBeans = new ArrayList<>();
-        for (CellInfoBean cellInfoBean: cellInfoBeans){
-            this.cellInfoBeans.add(cellInfoBean);
-        }
+        this.cellInfoBeans = new ArrayList<>(cellInfoBeans);
+//        for (CellInfoBean cellInfoBean: cellInfoBeans){
+//            this.cellInfoBeans.add(cellInfoBean);
+//        }
     }
 
     public void setTime(){
         this.currentTime = String.valueOf(Calendar.getInstance().get(Calendar.YEAR)) + "/" + String.valueOf(Calendar.getInstance().get(Calendar.MONTH) + 1) + "/" + String.valueOf(Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
         + "\n" + String.valueOf(Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(Calendar.getInstance().get(Calendar.MINUTE)) + ":" + String.valueOf(Calendar.getInstance().get(Calendar.SECOND))) ;
+    }
+
+    public CellInfoBean getServingCellInfo (){
+        return cellInfoBeans.get(0);
     }
 
     public String getCurrentTime() {

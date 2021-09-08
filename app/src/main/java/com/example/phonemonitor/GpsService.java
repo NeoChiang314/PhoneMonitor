@@ -23,6 +23,14 @@ public class GpsService extends Service {
 
     public double longitude, latitude;
 
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
     LocationManager locationManager;
     MyLocationListener myLocationListener;
 
@@ -80,7 +88,7 @@ public class GpsService extends Service {
             if (GpsActivity.getInstance() != null) {
                 GpsActivity.getInstance().showGpsData(longitude, latitude);
             }
-//
+
 //            if (CellInfoService.getInstance() != null) {
 //                MainService.getInstance().updateDataByTimeList();
 //            }

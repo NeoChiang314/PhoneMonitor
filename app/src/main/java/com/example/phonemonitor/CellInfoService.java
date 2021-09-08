@@ -2,6 +2,7 @@ package com.example.phonemonitor;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import androidx.core.app.ActivityCompat;
 import androidx.annotation.Nullable;
@@ -23,12 +24,19 @@ public class CellInfoService extends Service {
     TelephonyManager telephonyManager;
     MyPhoneStateListener myPhoneStateListener;
     List<CellInfo> cellInfoList = new ArrayList<>();
-    List<CellInfoBean> cellInfoBeans = new ArrayList<>();
-    List<CellInfoBean> lastCellInfoBeans = new ArrayList<>();
 
-    public List<CellInfoBean> getLastCellInfoBeans() {
-        return lastCellInfoBeans;
+    public List<CellInfoBean> getCellInfoBeans() {
+        return cellInfoBeans;
     }
+
+    List<CellInfoBean> cellInfoBeans = new ArrayList<>();
+//    List<CellInfoBean> lastCellInfoBeans = new ArrayList<>();
+//    final int delay = 1000;
+//    final Handler handler = new Handler();
+
+//    public List<CellInfoBean> getLastCellInfoBeans() {
+//        return lastCellInfoBeans;
+//    }
 
     public static CellInfoService getInstance () {
         return instance;
@@ -47,6 +55,14 @@ public class CellInfoService extends Service {
         myPhoneStateListener = new MyPhoneStateListener();
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+
+//        handler.postDelayed(new Runnable() {
+//            public void run() {
+//                getGeneralCellInfo();
+//                handler.postDelayed(this, delay);
+//            }
+//        }, delay);
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -54,7 +70,7 @@ public class CellInfoService extends Service {
     public void onDestroy(){
         super.onDestroy();
 //        Toast.makeText(CellInfoService.this, "Destroy", Toast.LENGTH_SHORT).show();
-        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_NONE);
+//        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_NONE);
         cellInfoList.clear();
         cellInfoBeans.clear();
         instance = null;
@@ -89,7 +105,7 @@ public class CellInfoService extends Service {
                     cellInfoBean.loadCellInfo(cellInfo);
                     cellInfoBeans.add(cellInfoBean);
                 }
-                lastCellInfoBeans = cellInfoBeans;
+//                lastCellInfoBeans = cellInfoBeans;
 
 //                if (GpsService.getInstance() != null) {
 //                    MainService.getInstance().updateDataByTimeList(new DataByTimeBean(GpsService.getInstance().longitude, GpsService.getInstance().latitude));
