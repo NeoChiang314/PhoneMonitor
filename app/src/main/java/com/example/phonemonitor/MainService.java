@@ -42,7 +42,11 @@ public class MainService extends Service {
     //
     //
     public static final String CHANNEL_ID = "1";
+    NotificationCompat.Builder builder;
+    NotificationManagerCompat notificationManager;
+    Notification notification;
     int position;
+    int consecutiveNum;
     public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
     final Handler handler = new Handler();
@@ -91,6 +95,7 @@ public class MainService extends Service {
     @Override
     public void onCreate() {
         createNotificationChannel();
+        consecutiveNum = 0;
         super.onCreate();
     }
 
@@ -120,10 +125,6 @@ public class MainService extends Service {
         return null;
     }
 
-//    public void setCellInfoBeans (List<CellInfoBean> cellInfoBeans){
-//        this.cellInfoBeans = cellInfoBeans;
-//    }
-
 
     //Methods for service basic functions
     //
@@ -135,7 +136,7 @@ public class MainService extends Service {
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
-            channel.setShowBadge(true);
+            channel.setSound(null, null);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
@@ -147,20 +148,28 @@ public class MainService extends Service {
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_signal)
 //                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.notification_icon))
                 .setContentTitle("test")
                 .setContentText("test")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
+//                .setSilent(true)
                 .setAutoCancel(false);
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        Notification notification = builder.build();
+        notificationManager = NotificationManagerCompat.from(this);
+        notification = builder.build();
         notificationManager.notify(001, notification);
 
         startForeground(001, notification);
+    }
+
+    public void updateNotification() {
+        builder.setContentTitle("RSRP: " + String.valueOf(cellInfoBeans.get(0).getCellRSRP()));
+        builder.setContentText("Serving cell TAC: " + String.valueOf(cellInfoBeans.get(0).getCellTac()));
+        notification = builder.build();
+        notificationManager.notify(001, notification);
     }
 
 
@@ -173,6 +182,16 @@ public class MainService extends Service {
             public void run() {
                 if (isCellInfoMonitorOpen() && isGpsMonitorOpen()) {
                     updateDataByTimeList();
+
+                    //Tester for isRecordable method
+                    if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4, 3)){
+                        Toast.makeText(MainService.this, "Recorded", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        Toast.makeText(MainService.this, "Record failed", Toast.LENGTH_SHORT).show();
+                    }
+                    //
+
                 }
                 handler.postDelayed(this, delay);
             }
@@ -180,7 +199,7 @@ public class MainService extends Service {
     }
 
     public void updateDataByTimeList() {
-        DataByTimeBean dataByTimeBean = new DataByTimeBean(longitude, latitude, cellInfoBeans);
+        DataByTimeBean dataByTimeBean = new DataByTimeBean(longitude, latitude, cellInfoBeans, consecutiveNum);
         dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
         dataByTimeBeans.add(dataByTimeBean);
 //        insert(dataByTimeBean);
@@ -212,6 +231,7 @@ public class MainService extends Service {
             ActivityCompat.requestPermissions(CellInfoActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, CellInfoActivity.FINE_LOCATION_REQUEST);
         }
         else{
+            consecutiveNum ++;
             myPhoneStateListener = new MyPhoneStateListener();
             telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
             ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
@@ -246,6 +266,7 @@ public class MainService extends Service {
                     cellInfoBean.loadCellInfo(cellInfo);
                     cellInfoBeans.add(cellInfoBean);
                 }
+                updateNotification();
 //                lastCellInfoBeans = cellInfoBeans;
 
 //                if (GpsService.getInstance() != null) {
@@ -263,6 +284,7 @@ public class MainService extends Service {
         }
     }
 
+
     //Methods for gps monitor
     //
     //
@@ -274,6 +296,7 @@ public class MainService extends Service {
             ActivityCompat.requestPermissions(GpsActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, GpsActivity.FINE_LOCATION_REQUEST);
         }
         else{
+            consecutiveNum ++;
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, myLocationListener);
             gpsMonitorStatus = true;
         }
@@ -324,6 +347,56 @@ public class MainService extends Service {
     //
     //
     //
+    public Boolean isRecordable (List<DataByTimeBean> dataByTimeBeans, int position, int cells, int steps) {
+
+        //Check is the dataByTime size bigger than the steps and positions
+        if ((dataByTimeBeans.size() < (position+1)) || (position < steps)) {
+            return false;
+            // dataByTime size is smaller than the steps required, cannot record
+        }
+        else {
+            //dataByTime size checked OK
+            //load temp dataByTime by steps
+            List<DataByTimeBean> tempDataByTimeBeans = new ArrayList<>((steps+1));
+            for (int i = steps; i >= 0; i--){
+                tempDataByTimeBeans.add(dataByTimeBeans.get(position - i));
+            }
+
+            //Check are the all cellInfo sizes bigger than the cells number required
+            int[] Tac = new int[cells];
+            int consecutiveCheck = tempDataByTimeBeans.get(0).getConsecutiveNum();
+            int i = 0;
+            for (DataByTimeBean tempDataByTimeBean : tempDataByTimeBeans){
+                if (tempDataByTimeBean.getConsecutiveNum() != consecutiveCheck) {
+                    return false;
+                    //Data is not consecutive, cannot record
+                }
+                else if (tempDataByTimeBean.getCellInfoBeans().size() < cells) {
+                    return false;
+                    //One of the cellInfo size is smaller than the cells number required, cannot record
+                }
+                else {
+                    // CellInfo size is OK, than check are the cells' TAC the same
+                    if (i == 0 ) {
+                        //for the first dataByTime, load its Tac values
+                        for (int k = 0; k < cells; k++) {
+                            Tac[k] = tempDataByTimeBean.getCellInfoBean(k).getCellTac();
+                        }
+                    }
+                    else {
+                        for (int k = 0; k < cells; k++) {
+                            if (Tac[k] != tempDataByTimeBean.getCellInfoBean(k).getCellTac()){
+                                return false;
+                                //One of the cell tac is changed, cannot record
+                            }
+                        }
+                    }
+                    i ++;
+                }
+            }
+            return true;
+        }
+    }
 }
 
 

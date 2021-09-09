@@ -37,8 +37,6 @@
             android:name=".MainService"
             android:foregroundServiceType="location"/>
 
-        <service android:name=".CellInfoService" />
-        <service android:name=".GpsService" />
     </application>
 
 </manifest>

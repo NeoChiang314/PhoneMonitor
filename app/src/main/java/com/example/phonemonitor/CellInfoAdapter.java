@@ -46,7 +46,6 @@ public class CellInfoAdapter extends BaseAdapter {
         TextView mncText = convertView.findViewById(R.id.mncView);
         TextView pciText = convertView.findViewById(R.id.pciView);
         TextView tacText = convertView.findViewById(R.id.tacView);
-        TextView connectionText = convertView.findViewById(R.id.connectionView);
         cellTypeText.setText(cellInfoBeans.get(position).getCellType());
         rsrpText.setText("RSRP value: " + String.valueOf(cellInfoBeans.get(position).cellRSRP));
         rsrqText.setText("RSRQ value: " + String.valueOf(cellInfoBeans.get(position).cellRSRQ));
@@ -54,7 +53,6 @@ public class CellInfoAdapter extends BaseAdapter {
         mncText.setText("Cell Mnc: " + cellInfoBeans.get(position).cellMnc);
         pciText.setText("Cell Pci: " + String.valueOf(cellInfoBeans.get(position).cellPci));
         tacText.setText("Cell Tac: " + String.valueOf(cellInfoBeans.get(position).cellTac));
-        connectionText.setText("Connection type: " + cellInfoBeans.get(position).connectionType + "\n\n");
         return convertView;
     }
 }

@@ -11,8 +11,10 @@ public class DataByTimeBean {
     double latitude;
     List<CellInfoBean> cellInfoBeans;
     int position;
+    int consecutiveNum;
 
-    public DataByTimeBean(double longitude, double latitude, List<CellInfoBean> cellInfoBeans){
+    public DataByTimeBean(double longitude, double latitude, List<CellInfoBean> cellInfoBeans, int consecutiveNum){
+        this.consecutiveNum = consecutiveNum;
         setTime();
         this.longitude = longitude;
         this.latitude = latitude;
@@ -68,9 +70,13 @@ public class DataByTimeBean {
         this.position = position;
     }
 
-    public CellInfoBean getCellInfoBean(int index){
-        if (this.getCellInfoBeans() != null){
-            return this.cellInfoBeans.get(index);
+    public int getConsecutiveNum() {
+        return consecutiveNum;
+    }
+
+    public CellInfoBean getCellInfoBean(int position){
+        if (cellInfoBeans.size() >= (position+1)) {
+            return cellInfoBeans.get(position);
         }
         else{
             return null;

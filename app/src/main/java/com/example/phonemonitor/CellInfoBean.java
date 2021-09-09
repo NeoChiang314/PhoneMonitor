@@ -20,8 +20,6 @@ public class CellInfoBean {
     String cellMnc;
     int cellPci;
     int cellTac;
-    int connectionCode;
-    String connectionType;
 
     public void loadCellInfo (CellInfo cellInfo) {
         if (cellInfo instanceof CellInfoLte){
@@ -32,7 +30,6 @@ public class CellInfoBean {
             this.setCellMnc(((CellInfoLte) cellInfo).getCellIdentity().getMncString());
             this.setCellPci(((CellInfoLte) cellInfo).getCellIdentity().getPci());
             this.setCellTac(((CellInfoLte) cellInfo).getCellIdentity().getTac());
-            this.setConnectionCode(cellInfo.getCellConnectionStatus());
         }
         else if (cellInfo instanceof CellInfoNr) {
             this.setCellType("Nr cell");
@@ -42,7 +39,6 @@ public class CellInfoBean {
             this.setCellMnc("Null");
             this.setCellPci(0);
             this.setCellTac(0);
-            this.setConnectionCode(cellInfo.getCellConnectionStatus());
         }
         else if (cellInfo instanceof CellInfoGsm){
             this.setCellType("Gsm cell");
@@ -52,7 +48,6 @@ public class CellInfoBean {
             this.setCellMnc("Null");
             this.setCellPci(0);
             this.setCellTac(0);
-            this.setConnectionCode(cellInfo.getCellConnectionStatus());
         }
         else if (cellInfo instanceof CellInfoCdma){
             this.setCellType("Cdma cell");
@@ -62,7 +57,6 @@ public class CellInfoBean {
             this.setCellMnc("Null");
             this.setCellPci(0);
             this.setCellTac(0);
-            this.setConnectionCode(cellInfo.getCellConnectionStatus());
         }
         else if (cellInfo instanceof CellInfoWcdma) {
             this.setCellType("Wcdma cell");
@@ -72,7 +66,6 @@ public class CellInfoBean {
             this.setCellMnc("Null");
             this.setCellPci(0);
             this.setCellTac(0);
-            this.setConnectionCode(cellInfo.getCellConnectionStatus());
         }
         else if (cellInfo instanceof CellInfoTdscdma) {
             this.setCellType("Tdscdma cell");
@@ -82,7 +75,6 @@ public class CellInfoBean {
             this.setCellMnc("Null");
             this.setCellPci(0);
             this.setCellTac(0);
-            this.setConnectionCode(cellInfo.getCellConnectionStatus());
         }
     }
 
@@ -136,33 +128,5 @@ public class CellInfoBean {
 
     public void setCellTac(int cellTac) {
         this.cellTac = cellTac;
-    }
-
-    public int getConnectionCode() {
-        return connectionCode;
-    }
-
-    public void setConnectionCode(int connectionCode) {
-        this.connectionCode = connectionCode;
-        if(connectionCode == CellInfo.CONNECTION_NONE){
-            this.connectionType = "Not a serving cell";
-        }
-        else if(connectionCode == CellInfo.CONNECTION_PRIMARY_SERVING){
-            this.connectionType = "Primary serving cell";
-        }
-        else if(connectionCode == CellInfo.CONNECTION_SECONDARY_SERVING){
-            this.connectionType = "Secondary serving cell";
-        }
-        else{
-            this.connectionType = "Unknown";
-        }
-    }
-
-    public String getConnectionType() {
-        return connectionType;
-    }
-
-    public void setConnectionType(String connectionType) {
-        this.connectionType = connectionType;
     }
 }
