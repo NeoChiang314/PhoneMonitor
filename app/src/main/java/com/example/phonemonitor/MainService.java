@@ -7,6 +7,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -50,7 +51,9 @@ public class MainService extends Service {
     public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
     final Handler handler = new Handler();
-    final int delay = 5000; // 5000 milliseconds == 5 second
+    final int delay = 2000; // 5000 milliseconds == 5 second
+    FourCellsThreeSteps fourCellsThreeSteps;
+    String sql;
 
 
     //Variables for cell info monitor
@@ -151,8 +154,8 @@ public class MainService extends Service {
         builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_signal)
 //                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.notification_icon))
-                .setContentTitle("test")
-                .setContentText("test")
+                .setContentTitle("Please start cell monitoring")
+                .setContentText("")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
 //                .setSilent(true)
@@ -182,14 +185,15 @@ public class MainService extends Service {
             public void run() {
                 if (isCellInfoMonitorOpen() && isGpsMonitorOpen()) {
                     updateDataByTimeList();
+                    recordFourCellsThreeSteps();
 
                     //Tester for isRecordable method
-                    if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4, 3)){
-                        Toast.makeText(MainService.this, "Recorded", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
-                        Toast.makeText(MainService.this, "Record failed", Toast.LENGTH_SHORT).show();
-                    }
+//                    if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4, 3)){
+//                        Toast.makeText(MainService.this, "Recorded", Toast.LENGTH_SHORT).show();
+//                    }
+//                    else {
+//                        Toast.makeText(MainService.this, "Record failed", Toast.LENGTH_SHORT).show();
+//                    }
                     //
 
                 }
@@ -208,18 +212,49 @@ public class MainService extends Service {
         }
     }
 
-//    public void insert (DataByTimeBean dataByTimeBean) {
-//        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
+    public void recordFourCellsThreeSteps (){
+        if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4,3)){
+            fourCellsThreeSteps = new FourCellsThreeSteps(dataByTimeBeans, (dataByTimeBeans.size()-1));
+            insertFourCellsThreeSteps(fourCellsThreeSteps);
+        }
+    }
+
+    public void insertFourCellsThreeSteps (FourCellsThreeSteps fourCellsThreeSteps) {
+        FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
+
+        // Gets the data repository in write mode
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+// Create a new map of values, where column names are the keys
+        ContentValues values = new ContentValues();
+        values.put(FeedReaderContract.FeedEntry.COLUMN_CURRENT_RSRP, fourCellsThreeSteps.getCurrentRSRP());
+//        values.put(FeedReaderContract.FeedEntry.COLUMN_CURRENT_RSRP, 1);
+        for (int s = 0; s <= 2; s++) {
+            for (int c = 0; c <= 3; c++) {
+                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRP[c][s], fourCellsThreeSteps.getRSRP(c,s));
+                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRQ[c][s], fourCellsThreeSteps.getRSRQ(c,s));
+            }
+            values.put(FeedReaderContract.FeedEntry.COLUMN_LONGITUDE[s], fourCellsThreeSteps.getLongitude(s));
+            values.put(FeedReaderContract.FeedEntry.COLUMN_LATITUDE[s], fourCellsThreeSteps.getLatitude(s));
+        }
+
+// Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME_4C3S, null, values);
+
+
 //        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
 //
 //        if (writableDatabase.isOpen()) {
-//            CellInfoBean maxCellInfoBean = getMaxSignalCell(dataByTimeBean);
-//            String sql = "insert into data (time, longitude, latitude, RSRP, RSRQ, PCI) values (" + "'" + dataByTimeBean.getCurrentTime() + "','" + dataByTimeBean.getLongitude() + "','" + dataByTimeBean.getLatitude()
-//                    + "','" + maxCellInfoBean.getCellRSRP() + "','" + maxCellInfoBean.getCellRSRQ() + "','" + maxCellInfoBean.getCellPci() +  "')";
+//            sql = "insert into Data_4Cells_3Steps (currentRSRP) values (" + "'" + fourCellsThreeSteps.getCurrentRSRP() + "')";
+//            writableDatabase.execSQL(sql);
+//
+//            sql = "insert into Data_4Cells_3Steps (RSRP_0_0, RSRP_1_0, RSRP_2_0, RSRP_3_0) values (" + "'" + fourCellsThreeSteps.getRSRP(0, 0) + "','"
+//                    + fourCellsThreeSteps.getRSRP(1, 0) + "','" + fourCellsThreeSteps.getRSRP(2, 0) +
+//                    "','" + fourCellsThreeSteps.getRSRP(3, 0) + "')";
 //            writableDatabase.execSQL(sql);
 //        }
-//        writableDatabase.close();
-//    }
+        db.close();
+    }
 
 
     //Methods for cell info monitor

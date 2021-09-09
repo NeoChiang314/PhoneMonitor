@@ -12,6 +12,26 @@ public class FourCellsThreeSteps {
     double[] longitude = new double[3];
     double[] latitude = new double[3];
 
+    public int getCurrentRSRP() {
+        return currentRSRP;
+    }
+
+    public int getRSRP(int cell, int step) {
+        return RSRP[cell][step];
+    }
+
+    public int getRSRQ(int cell, int step) {
+        return RSRQ[cell][step];
+    }
+
+    public double getLongitude(int step) {
+        return longitude[step];
+    }
+
+    public double getLatitude(int step) {
+        return latitude[step];
+    }
+
     public FourCellsThreeSteps(List<DataByTimeBean> dataByTimeBeans, int position) {
         currentRSRP = dataByTimeBeans.get(position).getCellInfoBean(0).getCellRSRP();
         for (int i = 0; i < 3; i++){
