@@ -3,6 +3,7 @@ package com.example.phonemonitor;
 import android.os.Bundle;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -27,13 +28,26 @@ public class DataUnitActivity extends AppCompatActivity {
         servingTACText = findViewById(R.id.servingTACView);
         cellInfo = findViewById(R.id.dataCellInfo);
 
-        dataTimeText.setText(dataByTimeBean.currentTime);
-        dataLongitudeText.setText("Longitude:\n" + String.valueOf(dataByTimeBean.longitude));
-        dataLatitudeText.setText("Latitude:\n" + String.valueOf(dataByTimeBean.latitude));
-        servingRSRPText.setText("Serving cell RSRP: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellRSRP()));
-        servingTACText.setText("Cell's TAC: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellTac()));
-        cellInfoAdapter = new CellInfoAdapter(dataByTimeBean.cellInfoBeans, this);
-        cellInfo.setAdapter(cellInfoAdapter);
+        try {
+            dataTimeText.setText(dataByTimeBean.currentTime);
+            dataLongitudeText.setText("Longitude:\n" + String.valueOf(dataByTimeBean.longitude));
+            dataLatitudeText.setText("Latitude:\n" + String.valueOf(dataByTimeBean.latitude));
+            servingRSRPText.setText("Serving cell RSRP: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellRSRP()));
+            servingTACText.setText("Cell's TAC: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellTac()));
+            cellInfoAdapter = new CellInfoAdapter(dataByTimeBean.cellInfoBeans, this);
+            cellInfo.setAdapter(cellInfoAdapter);
+        } catch (Exception e) {
+            Toast.makeText(DataUnitActivity.this, "An invalid data, deleted by the system", Toast.LENGTH_SHORT).show();
+            MainService.getInstance().removeData(MainService.getInstance().getPosition());
+            finish();
+        }
+//        dataTimeText.setText(dataByTimeBean.currentTime);
+//        dataLongitudeText.setText("Longitude:\n" + String.valueOf(dataByTimeBean.longitude));
+//        dataLatitudeText.setText("Latitude:\n" + String.valueOf(dataByTimeBean.latitude));
+//        servingRSRPText.setText("Serving cell RSRP: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellRSRP()));
+//        servingTACText.setText("Cell's TAC: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellTac()));
+//        cellInfoAdapter = new CellInfoAdapter(dataByTimeBean.cellInfoBeans, this);
+//        cellInfo.setAdapter(cellInfoAdapter);
     }
 
     @Override

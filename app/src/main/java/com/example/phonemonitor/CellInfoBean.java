@@ -21,7 +21,18 @@ public class CellInfoBean {
     int cellPci;
     int cellTac;
 
-    public void loadCellInfo (CellInfo cellInfo) {
+    //initializer for avoiding crushing
+//    public CellInfoBean(){
+//        this.setCellType("unknown");
+//        this.setCellRSRP(0);
+//        this.setCellRSRQ(0);
+//        this.setCellMcc("unknown");
+//        this.setCellMnc("unknown");
+//        this.setCellPci(0);
+//        this.setCellTac(0);
+//    }
+
+    public CellInfoBean (CellInfo cellInfo) {
         if (cellInfo instanceof CellInfoLte){
             this.setCellType("LTE cell");
             this.setCellRSRP(((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp());
@@ -31,51 +42,54 @@ public class CellInfoBean {
             this.setCellPci(((CellInfoLte) cellInfo).getCellIdentity().getPci());
             this.setCellTac(((CellInfoLte) cellInfo).getCellIdentity().getTac());
         }
-        else if (cellInfo instanceof CellInfoNr) {
-            this.setCellType("Nr cell");
-            this.setCellRSRP(0);
-            this.setCellRSRQ(0);
-            this.setCellMcc("Null");
-            this.setCellMnc("Null");
-            this.setCellPci(0);
-            this.setCellTac(0);
-        }
-        else if (cellInfo instanceof CellInfoGsm){
-            this.setCellType("Gsm cell");
-            this.setCellRSRP(0);
-            this.setCellRSRQ(0);
-            this.setCellMcc("Null");
-            this.setCellMnc("Null");
-            this.setCellPci(0);
-            this.setCellTac(0);
-        }
-        else if (cellInfo instanceof CellInfoCdma){
-            this.setCellType("Cdma cell");
-            this.setCellRSRP(0);
-            this.setCellRSRQ(0);
-            this.setCellMcc("Null");
-            this.setCellMnc("Null");
-            this.setCellPci(0);
-            this.setCellTac(0);
-        }
-        else if (cellInfo instanceof CellInfoWcdma) {
-            this.setCellType("Wcdma cell");
-            this.setCellRSRP(0);
-            this.setCellRSRQ(0);
-            this.setCellMcc("Null");
-            this.setCellMnc("Null");
-            this.setCellPci(0);
-            this.setCellTac(0);
-        }
-        else if (cellInfo instanceof CellInfoTdscdma) {
-            this.setCellType("Tdscdma cell");
-            this.setCellRSRP(0);
-            this.setCellRSRQ(0);
-            this.setCellMcc("Null");
-            this.setCellMnc("Null");
-            this.setCellPci(0);
-            this.setCellTac(0);
-        }
+
+         //Due to this project only aims to LTE network at this stage, other cell types are not monitored
+        //The following code is for further 5G network monitoring
+//        else if (cellInfo instanceof CellInfoNr) {
+//            this.setCellType("Nr cell");
+//            this.setCellRSRP(0);
+//            this.setCellRSRQ(0);
+//            this.setCellMcc("Null");
+//            this.setCellMnc("Null");
+//            this.setCellPci(0);
+//            this.setCellTac(0);
+//        }
+//        else if (cellInfo instanceof CellInfoGsm){
+//            this.setCellType("Gsm cell");
+//            this.setCellRSRP(0);
+//            this.setCellRSRQ(0);
+//            this.setCellMcc("Null");
+//            this.setCellMnc("Null");
+//            this.setCellPci(0);
+//            this.setCellTac(0);
+//        }
+//        else if (cellInfo instanceof CellInfoCdma){
+//            this.setCellType("Cdma cell");
+//            this.setCellRSRP(0);
+//            this.setCellRSRQ(0);
+//            this.setCellMcc("Null");
+//            this.setCellMnc("Null");
+//            this.setCellPci(0);
+//            this.setCellTac(0);
+//        }
+//        else if (cellInfo instanceof CellInfoWcdma) {
+//            this.setCellType("Wcdma cell");
+//            this.setCellRSRP(0);
+//            this.setCellRSRQ(0);
+//            this.setCellMcc("Null");
+//            this.setCellMnc("Null");
+//            this.setCellPci(0);
+//            this.setCellTac(0);
+//        }
+//        else if (cellInfo instanceof CellInfoTdscdma) {
+//            this.setCellType("Tdscdma cell");
+//            this.setCellRSRP(0);
+//            this.setCellRSRQ(0);
+//            this.setCellMcc("Null");
+//            this.setCellMnc("Null");
+//            this.setCellPci(0);
+//            this.setCellTac(0);
+//        }
     }
 
     public String getCellType() { return cellType; }

@@ -13,6 +13,17 @@ public class DataByTimeBean {
     int position;
     int consecutiveNum;
 
+    //initializer for avoiding crushing
+//    public DataByTimeBean(){
+//        this.consecutiveNum = 0;
+//        setTime();
+//        this.longitude = 0;
+//        this.latitude = 0;
+//        CellInfoBean cellInfoBean = new CellInfoBean();
+//        this.cellInfoBeans = new ArrayList<>();
+//        this.cellInfoBeans.add(cellInfoBean);
+//    }
+
     public DataByTimeBean(double longitude, double latitude, List<CellInfoBean> cellInfoBeans, int consecutiveNum){
         this.consecutiveNum = consecutiveNum;
         setTime();

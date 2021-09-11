@@ -216,6 +216,13 @@ public class MainService extends Service {
         }
     }
 
+    public void removeData(int position) {
+        dataByTimeBeans.remove(position);
+        if (MainActivity.getInstance() != null) {
+            MainActivity.getInstance().updateDataByTimeView();
+        }
+    }
+
     private Boolean isRecordable (List<DataByTimeBean> dataByTimeBeans, int position, int cells, int steps) {
 
         //Check is the dataByTime size bigger than the steps and positions
@@ -375,8 +382,7 @@ public class MainService extends Service {
             try{
                 cellInfoList = new ArrayList<>(telephonyManager.getAllCellInfo());
                 for (CellInfo cellInfo : cellInfoList) {
-                    CellInfoBean cellInfoBean = new CellInfoBean();
-                    cellInfoBean.loadCellInfo(cellInfo);
+                    CellInfoBean cellInfoBean = new CellInfoBean(cellInfo);
                     cellInfoBeans.add(cellInfoBean);
                 }
                 updateNotification();
