@@ -1,22 +1,16 @@
 package com.example.phonemonitor;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Intent;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CompoundButton;
 import android.widget.ListView;
-import android.widget.Toast;
-import android.database.sqlite.*;
+import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     }
     ListView listView;
     DataByTimeAdapter dataByTimeAdapter;
+    TextView dataRecordedText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,12 +29,15 @@ public class MainActivity extends AppCompatActivity {
         instance = this;
         setContentView(R.layout.activity_main);
         listView = findViewById(R.id.dataByTime);
+        dataRecordedText = findViewById(R.id.dataRecordedView);
+
 
         if (MainService.getInstance() == null) {
             Intent intent = new Intent();
             intent.setClass(MainActivity.this, MainService.class);
             startService(intent);
         }
+        updateDatabaseCount();
     }
 
     @Override
@@ -64,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 //        cellInfoBeans.clear();
-//        instance = null;
+        instance = null;
 //        Toast.makeText(MainActivity.this, "Destroy", Toast.LENGTH_SHORT).show();
     }
 
@@ -80,8 +78,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+        updateDatabaseCount();
         dataByTimeAdapter.notifyDataSetChanged();
     }
+
+    private void updateDatabaseCount() {
+        FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        long[] count = new long[2];
+        count[0] = DatabaseUtils.queryNumEntries(db, FeedReaderContract.FeedEntry.TABLE_NAME_4C3S);
+        count[1] = DatabaseUtils.queryNumEntries(db, FeedReaderContract.FeedEntry.TABLE_NAME_2C3S);
+        db.close();
+        dataRecordedText.setText("4C3S data recorded: " + String.valueOf(count[0]) + "\n"
+                + "2C3S data recorded: " + String.valueOf(count[1]));
+    }
+
 
     public void startCellInfoActivity(View view){
         startActivity(new Intent(this, CellInfoActivity.class));
@@ -89,5 +100,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void startGpsActivity(View view){
         startActivity(new Intent(this, GpsActivity.class));
+    }
+
+    public void clearList(View view) {
+        MainService.getInstance().clearList();
     }
 }

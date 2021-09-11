@@ -1,12 +1,8 @@
 package com.example.phonemonitor;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;

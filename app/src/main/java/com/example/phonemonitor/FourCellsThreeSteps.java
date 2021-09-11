@@ -2,7 +2,6 @@
 
 package com.example.phonemonitor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FourCellsThreeSteps {
@@ -34,13 +33,13 @@ public class FourCellsThreeSteps {
 
     public FourCellsThreeSteps(List<DataByTimeBean> dataByTimeBeans, int position) {
         currentRSRP = dataByTimeBeans.get(position).getCellInfoBean(0).getCellRSRP();
-        for (int i = 0; i < 3; i++){
-            for (int k = 0; k < 4; k++){
-                RSRP[k][i] = dataByTimeBeans.get(position-(i+1)).getCellInfoBean(k).getCellRSRP();
-                RSRQ[k][i] = dataByTimeBeans.get(position-(i+1)).getCellInfoBean(k).getCellRSRQ();
+        for (int s = 0; s < 3; s++){
+            for (int c = 0; c < 4; c++){
+                RSRP[c][s] = dataByTimeBeans.get(position-(s+1)).getCellInfoBean(c).getCellRSRP();
+                RSRQ[c][s] = dataByTimeBeans.get(position-(s+1)).getCellInfoBean(c).getCellRSRQ();
             }
-            longitude[i] = dataByTimeBeans.get(position-(i+1)).getLongitude();
-            latitude[i] = dataByTimeBeans.get(position-(i+1)).getLatitude();
+            longitude[s] = dataByTimeBeans.get(position-(s+1)).getLongitude();
+            latitude[s] = dataByTimeBeans.get(position-(s+1)).getLatitude();
         }
     }
 }

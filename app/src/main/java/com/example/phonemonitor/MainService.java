@@ -1,7 +1,6 @@
 package com.example.phonemonitor;
 
 import android.Manifest;
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,10 +10,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -48,12 +45,12 @@ public class MainService extends Service {
     Notification notification;
     int position;
     int consecutiveNum;
+
     public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
     final Handler handler = new Handler();
-    final int delay = 2000; // 5000 milliseconds == 5 second
-    FourCellsThreeSteps fourCellsThreeSteps;
-    String sql;
+    final int delay = 5000; // 5000 milliseconds == 5 second
+    FeedReaderDbHelper dbHelper;
 
 
     //Variables for cell info monitor
@@ -175,6 +172,13 @@ public class MainService extends Service {
         notificationManager.notify(001, notification);
     }
 
+    public void clearList(){
+        dataByTimeBeans.clear();
+        if (MainActivity.getInstance() != null) {
+            MainActivity.getInstance().updateDataByTimeView();
+        }
+    }
+
 
     //Methods for data recording
     //
@@ -186,6 +190,7 @@ public class MainService extends Service {
                 if (isCellInfoMonitorOpen() && isGpsMonitorOpen()) {
                     updateDataByTimeList();
                     recordFourCellsThreeSteps();
+                    recordTwoCellsThreeSteps();
 
                     //Tester for isRecordable method
 //                    if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4, 3)){
@@ -202,33 +207,89 @@ public class MainService extends Service {
         }, delay);
     }
 
-    public void updateDataByTimeList() {
+    private void updateDataByTimeList() {
         DataByTimeBean dataByTimeBean = new DataByTimeBean(longitude, latitude, cellInfoBeans, consecutiveNum);
         dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
         dataByTimeBeans.add(dataByTimeBean);
-//        insert(dataByTimeBean);
         if (MainActivity.getInstance() != null) {
             MainActivity.getInstance().updateDataByTimeView();
         }
     }
 
-    public void recordFourCellsThreeSteps (){
+    private Boolean isRecordable (List<DataByTimeBean> dataByTimeBeans, int position, int cells, int steps) {
+
+        //Check is the dataByTime size bigger than the steps and positions
+        if ((dataByTimeBeans.size() < (position+1)) || (position < steps)) {
+            return false;
+            // dataByTime size is smaller than the steps required, cannot record
+        }
+        else {
+            //dataByTime size checked OK
+            //load temp dataByTime by steps
+            List<DataByTimeBean> tempDataByTimeBeans = new ArrayList<>((steps+1));
+            for (int i = steps; i >= 0; i--){
+                tempDataByTimeBeans.add(dataByTimeBeans.get(position - i));
+            }
+
+            //Check are the all cellInfo sizes bigger than the cells number required
+            int[] Tac = new int[cells];
+            int consecutiveCheck = tempDataByTimeBeans.get(0).getConsecutiveNum();
+            int i = 0;
+            for (DataByTimeBean tempDataByTimeBean : tempDataByTimeBeans){
+                if (tempDataByTimeBean.getConsecutiveNum() != consecutiveCheck) {
+                    return false;
+                    //Data is not consecutive, cannot record
+                }
+                else if (tempDataByTimeBean.getCellInfoBeans().size() < cells) {
+                    return false;
+                    //One of the cellInfo size is smaller than the cells number required, cannot record
+                }
+                else {
+                    // CellInfo size is OK, than check are the cells' TAC the same
+                    if (i == 0 ) {
+                        //for the first dataByTime, load its Tac values
+                        for (int k = 0; k < cells; k++) {
+                            Tac[k] = tempDataByTimeBean.getCellInfoBean(k).getCellTac();
+                        }
+                    }
+                    else {
+                        for (int k = 0; k < cells; k++) {
+                            if (Tac[k] != tempDataByTimeBean.getCellInfoBean(k).getCellTac()){
+                                return false;
+                                //One of the cell tac is changed, cannot record
+                            }
+                        }
+                    }
+                    i ++;
+                }
+            }
+            return true;
+        }
+    }
+
+    private void recordFourCellsThreeSteps (){
         if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4,3)){
-            fourCellsThreeSteps = new FourCellsThreeSteps(dataByTimeBeans, (dataByTimeBeans.size()-1));
+            FourCellsThreeSteps fourCellsThreeSteps = new FourCellsThreeSteps(dataByTimeBeans, (dataByTimeBeans.size()-1));
             insertFourCellsThreeSteps(fourCellsThreeSteps);
         }
     }
 
-    public void insertFourCellsThreeSteps (FourCellsThreeSteps fourCellsThreeSteps) {
+    private void recordTwoCellsThreeSteps (){
+        if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 2,3)){
+            TwoCellsThreeSteps twoCellsThreeSteps = new TwoCellsThreeSteps(dataByTimeBeans, (dataByTimeBeans.size()-1));
+            insertTwoCellsThreeSteps(twoCellsThreeSteps);
+        }
+    }
+
+    private void insertFourCellsThreeSteps (FourCellsThreeSteps fourCellsThreeSteps) {
         FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
 
         // Gets the data repository in write mode
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-// Create a new map of values, where column names are the keys
+        // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
         values.put(FeedReaderContract.FeedEntry.COLUMN_CURRENT_RSRP, fourCellsThreeSteps.getCurrentRSRP());
-//        values.put(FeedReaderContract.FeedEntry.COLUMN_CURRENT_RSRP, 1);
         for (int s = 0; s <= 2; s++) {
             for (int c = 0; c <= 3; c++) {
                 values.put(FeedReaderContract.FeedEntry.COLUMN_RSRP[c][s], fourCellsThreeSteps.getRSRP(c,s));
@@ -238,23 +299,40 @@ public class MainService extends Service {
             values.put(FeedReaderContract.FeedEntry.COLUMN_LATITUDE[s], fourCellsThreeSteps.getLatitude(s));
         }
 
-// Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME_4C3S, null, values);
-
-
-//        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
-//
-//        if (writableDatabase.isOpen()) {
-//            sql = "insert into Data_4Cells_3Steps (currentRSRP) values (" + "'" + fourCellsThreeSteps.getCurrentRSRP() + "')";
-//            writableDatabase.execSQL(sql);
-//
-//            sql = "insert into Data_4Cells_3Steps (RSRP_0_0, RSRP_1_0, RSRP_2_0, RSRP_3_0) values (" + "'" + fourCellsThreeSteps.getRSRP(0, 0) + "','"
-//                    + fourCellsThreeSteps.getRSRP(1, 0) + "','" + fourCellsThreeSteps.getRSRP(2, 0) +
-//                    "','" + fourCellsThreeSteps.getRSRP(3, 0) + "')";
-//            writableDatabase.execSQL(sql);
-//        }
+        // Insert the new row, returning the primary key value of the new row
+        long lastRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME_4C3S, null, values);
         db.close();
     }
+
+    private void insertTwoCellsThreeSteps(TwoCellsThreeSteps twoCellsThreeSteps) {
+        FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
+
+        // Gets the data repository in write mode
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(FeedReaderContract.FeedEntry.COLUMN_CURRENT_RSRP, twoCellsThreeSteps.getCurrentRSRP());
+        for (int s = 0; s <= 2; s++) {
+            for (int c = 0; c <= 1; c++) {
+                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRP[c][s], twoCellsThreeSteps.getRSRP(c,s));
+                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRQ[c][s], twoCellsThreeSteps.getRSRQ(c,s));
+            }
+            values.put(FeedReaderContract.FeedEntry.COLUMN_LONGITUDE[s], twoCellsThreeSteps.getLongitude(s));
+            values.put(FeedReaderContract.FeedEntry.COLUMN_LATITUDE[s], twoCellsThreeSteps.getLatitude(s));
+        }
+
+        // Insert the new row, returning the primary key value of the new row
+        long lastRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME_2C3S, null, values);
+        db.close();
+    }
+
+//    public long getTableCount() {
+//        FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
+//        SQLiteDatabase db = dbHelper.getReadableDatabase();
+//        long count = DatabaseUtils.queryNumEntries(db, FeedReaderContract.FeedEntry.TABLE_NAME_4C3S);
+//        db.close();
+//        return count;
+//    }
 
 
     //Methods for cell info monitor
@@ -269,13 +347,13 @@ public class MainService extends Service {
             consecutiveNum ++;
             myPhoneStateListener = new MyPhoneStateListener();
             telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+            telephonyManager.listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
             cellInfoMonitorStatus = true;
         }
     }
 
     public void stopCellInfoMonitoring(){
-        ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        telephonyManager.listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         cellInfoMonitorStatus = false;
     }
 
@@ -295,7 +373,7 @@ public class MainService extends Service {
         else{
             cellInfoBeans.clear();
             try{
-                cellInfoList = this.telephonyManager.getAllCellInfo();
+                cellInfoList = new ArrayList<>(telephonyManager.getAllCellInfo());
                 for (CellInfo cellInfo : cellInfoList) {
                     CellInfoBean cellInfoBean = new CellInfoBean();
                     cellInfoBean.loadCellInfo(cellInfo);
@@ -382,56 +460,6 @@ public class MainService extends Service {
     //
     //
     //
-    public Boolean isRecordable (List<DataByTimeBean> dataByTimeBeans, int position, int cells, int steps) {
-
-        //Check is the dataByTime size bigger than the steps and positions
-        if ((dataByTimeBeans.size() < (position+1)) || (position < steps)) {
-            return false;
-            // dataByTime size is smaller than the steps required, cannot record
-        }
-        else {
-            //dataByTime size checked OK
-            //load temp dataByTime by steps
-            List<DataByTimeBean> tempDataByTimeBeans = new ArrayList<>((steps+1));
-            for (int i = steps; i >= 0; i--){
-                tempDataByTimeBeans.add(dataByTimeBeans.get(position - i));
-            }
-
-            //Check are the all cellInfo sizes bigger than the cells number required
-            int[] Tac = new int[cells];
-            int consecutiveCheck = tempDataByTimeBeans.get(0).getConsecutiveNum();
-            int i = 0;
-            for (DataByTimeBean tempDataByTimeBean : tempDataByTimeBeans){
-                if (tempDataByTimeBean.getConsecutiveNum() != consecutiveCheck) {
-                    return false;
-                    //Data is not consecutive, cannot record
-                }
-                else if (tempDataByTimeBean.getCellInfoBeans().size() < cells) {
-                    return false;
-                    //One of the cellInfo size is smaller than the cells number required, cannot record
-                }
-                else {
-                    // CellInfo size is OK, than check are the cells' TAC the same
-                    if (i == 0 ) {
-                        //for the first dataByTime, load its Tac values
-                        for (int k = 0; k < cells; k++) {
-                            Tac[k] = tempDataByTimeBean.getCellInfoBean(k).getCellTac();
-                        }
-                    }
-                    else {
-                        for (int k = 0; k < cells; k++) {
-                            if (Tac[k] != tempDataByTimeBean.getCellInfoBean(k).getCellTac()){
-                                return false;
-                                //One of the cell tac is changed, cannot record
-                            }
-                        }
-                    }
-                    i ++;
-                }
-            }
-            return true;
-        }
-    }
 }
 
 
