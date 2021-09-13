@@ -1,6 +1,7 @@
 package com.example.phonemonitor;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -25,6 +26,7 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -32,6 +34,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 public class MainService extends Service {
 
@@ -48,8 +51,10 @@ public class MainService extends Service {
 
     public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
-    final Handler handler = new Handler();
-    final int delay = 5000; // 5000 milliseconds == 5 second
+    final Handler handlerDataRecording = new Handler();
+    final Handler handlerCellUpdating = new Handler();
+    final int delayDataRecording = 2000; // 2000 milliseconds == 2 second
+    final int delayCellUpdating = 500;
     FeedReaderDbHelper dbHelper;
 
 
@@ -59,8 +64,9 @@ public class MainService extends Service {
     //
     Boolean cellInfoMonitorStatus;
     TelephonyManager telephonyManager;
-    MyPhoneStateListener myPhoneStateListener;
-    List<CellInfo> cellInfoList = new ArrayList<>();
+    MyPhoneStateListener myPhoneStateListener = new MyPhoneStateListener();
+    Executor cellUpdateExecutor = new CellUpdataExecutor();
+    MyCellInfoCallBack myCellInfoCallBack = new MyCellInfoCallBack();
     List<CellInfoBean> cellInfoBeans = new ArrayList<>();
 
 
@@ -81,16 +87,22 @@ public class MainService extends Service {
     public static MainService getInstance() {
         return instance;
     }
+
     public int getPosition() {
         return position;
     }
+
     public void setPosition(int position) {
         this.position = position;
     }
+
     public Boolean isCellInfoMonitorOpen() {
         return cellInfoMonitorStatus;
     }
-    public Boolean isGpsMonitorOpen() {return gpsMonitorStatus; }
+
+    public Boolean isGpsMonitorOpen() {
+        return gpsMonitorStatus;
+    }
 
     @Override
     public void onCreate() {
@@ -107,14 +119,22 @@ public class MainService extends Service {
         gpsMonitorStatus = false;
         startForegroundService();
         startDataRecording();
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
-//        SQLiteOpenHelper helper = MySQLiteOpenHelper.getInstance(this);
-//        SQLiteDatabase writableDatabase = helper.getWritableDatabase();
+        Runnable cellInfoRunnable = new Runnable() {
+            public void run() {
+                if (ActivityCompat.checkSelfPermission(MainService.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    telephonyManager.requestCellInfoUpdate(cellUpdateExecutor, myCellInfoCallBack);
+                }
+                handlerCellUpdating.postDelayed(this, delayCellUpdating);
+            }
+        };
+        cellUpdateExecutor.execute(cellInfoRunnable);
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
         instance = null;
     }
@@ -143,7 +163,7 @@ public class MainService extends Service {
         }
     }
 
-    public void startForegroundService(){
+    public void startForegroundService() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
@@ -172,7 +192,7 @@ public class MainService extends Service {
         notificationManager.notify(001, notification);
     }
 
-    public void clearList(){
+    public void clearList() {
         dataByTimeBeans.clear();
         if (MainActivity.getInstance() != null) {
             MainActivity.getInstance().updateDataByTimeView();
@@ -184,8 +204,8 @@ public class MainService extends Service {
     //
     //
     //
-    public void startDataRecording(){
-        handler.postDelayed(new Runnable() {
+    public void startDataRecording() {
+        handlerDataRecording.postDelayed(new Runnable() {
             public void run() {
                 if (isCellInfoMonitorOpen() && isGpsMonitorOpen()) {
                     updateDataByTimeList();
@@ -202,14 +222,14 @@ public class MainService extends Service {
                     //
 
                 }
-                handler.postDelayed(this, delay);
+                handlerDataRecording.postDelayed(this, delayDataRecording);
             }
-        }, delay);
+        }, delayDataRecording);
     }
 
     private void updateDataByTimeList() {
         DataByTimeBean dataByTimeBean = new DataByTimeBean(longitude, latitude, cellInfoBeans, consecutiveNum);
-        dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
+        dataByTimeBean.setPosition(dataByTimeBeans.size() + 1);
         dataByTimeBeans.add(dataByTimeBean);
         if (MainActivity.getInstance() != null) {
             MainActivity.getInstance().updateDataByTimeView();
@@ -223,18 +243,17 @@ public class MainService extends Service {
         }
     }
 
-    private Boolean isRecordable (List<DataByTimeBean> dataByTimeBeans, int position, int cells, int steps) {
+    private Boolean isRecordable(List<DataByTimeBean> dataByTimeBeans, int position, int cells, int steps) {
 
         //Check is the dataByTime size bigger than the steps and positions
-        if ((dataByTimeBeans.size() < (position+1)) || (position < steps)) {
+        if ((dataByTimeBeans.size() < (position + 1)) || (position < steps)) {
             return false;
             // dataByTime size is smaller than the steps required, cannot record
-        }
-        else {
+        } else {
             //dataByTime size checked OK
             //load temp dataByTime by steps
-            List<DataByTimeBean> tempDataByTimeBeans = new ArrayList<>((steps+1));
-            for (int i = steps; i >= 0; i--){
+            List<DataByTimeBean> tempDataByTimeBeans = new ArrayList<>((steps + 1));
+            for (int i = steps; i >= 0; i--) {
                 tempDataByTimeBeans.add(dataByTimeBeans.get(position - i));
             }
 
@@ -242,53 +261,50 @@ public class MainService extends Service {
             int[] Tac = new int[cells];
             int consecutiveCheck = tempDataByTimeBeans.get(0).getConsecutiveNum();
             int i = 0;
-            for (DataByTimeBean tempDataByTimeBean : tempDataByTimeBeans){
+            for (DataByTimeBean tempDataByTimeBean : tempDataByTimeBeans) {
                 if (tempDataByTimeBean.getConsecutiveNum() != consecutiveCheck) {
                     return false;
                     //Data is not consecutive, cannot record
-                }
-                else if (tempDataByTimeBean.getCellInfoBeans().size() < cells) {
+                } else if (tempDataByTimeBean.getCellInfoBeans().size() < cells) {
                     return false;
                     //One of the cellInfo size is smaller than the cells number required, cannot record
-                }
-                else {
+                } else {
                     // CellInfo size is OK, than check are the cells' TAC the same
-                    if (i == 0 ) {
+                    if (i == 0) {
                         //for the first dataByTime, load its Tac values
                         for (int k = 0; k < cells; k++) {
                             Tac[k] = tempDataByTimeBean.getCellInfoBean(k).getCellTac();
                         }
-                    }
-                    else {
+                    } else {
                         for (int k = 0; k < cells; k++) {
-                            if (Tac[k] != tempDataByTimeBean.getCellInfoBean(k).getCellTac()){
+                            if (Tac[k] != tempDataByTimeBean.getCellInfoBean(k).getCellTac()) {
                                 return false;
                                 //One of the cell tac is changed, cannot record
                             }
                         }
                     }
-                    i ++;
+                    i++;
                 }
             }
             return true;
         }
     }
 
-    private void recordFourCellsThreeSteps (){
-        if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4,3)){
-            FourCellsThreeSteps fourCellsThreeSteps = new FourCellsThreeSteps(dataByTimeBeans, (dataByTimeBeans.size()-1));
+    private void recordFourCellsThreeSteps() {
+        if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size() - 1), 4, 3)) {
+            FourCellsThreeSteps fourCellsThreeSteps = new FourCellsThreeSteps(dataByTimeBeans, (dataByTimeBeans.size() - 1));
             insertFourCellsThreeSteps(fourCellsThreeSteps);
         }
     }
 
-    private void recordTwoCellsThreeSteps (){
-        if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 2,3)){
-            TwoCellsThreeSteps twoCellsThreeSteps = new TwoCellsThreeSteps(dataByTimeBeans, (dataByTimeBeans.size()-1));
+    private void recordTwoCellsThreeSteps() {
+        if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size() - 1), 2, 3)) {
+            TwoCellsThreeSteps twoCellsThreeSteps = new TwoCellsThreeSteps(dataByTimeBeans, (dataByTimeBeans.size() - 1));
             insertTwoCellsThreeSteps(twoCellsThreeSteps);
         }
     }
 
-    private void insertFourCellsThreeSteps (FourCellsThreeSteps fourCellsThreeSteps) {
+    private void insertFourCellsThreeSteps(FourCellsThreeSteps fourCellsThreeSteps) {
         FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
 
         // Gets the data repository in write mode
@@ -299,8 +315,8 @@ public class MainService extends Service {
         values.put(FeedReaderContract.FeedEntry.COLUMN_CURRENT_RSRP, fourCellsThreeSteps.getCurrentRSRP());
         for (int s = 0; s <= 2; s++) {
             for (int c = 0; c <= 3; c++) {
-                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRP[c][s], fourCellsThreeSteps.getRSRP(c,s));
-                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRQ[c][s], fourCellsThreeSteps.getRSRQ(c,s));
+                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRP[c][s], fourCellsThreeSteps.getRSRP(c, s));
+                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRQ[c][s], fourCellsThreeSteps.getRSRQ(c, s));
             }
             values.put(FeedReaderContract.FeedEntry.COLUMN_LONGITUDE[s], fourCellsThreeSteps.getLongitude(s));
             values.put(FeedReaderContract.FeedEntry.COLUMN_LATITUDE[s], fourCellsThreeSteps.getLatitude(s));
@@ -321,8 +337,8 @@ public class MainService extends Service {
         values.put(FeedReaderContract.FeedEntry.COLUMN_CURRENT_RSRP, twoCellsThreeSteps.getCurrentRSRP());
         for (int s = 0; s <= 2; s++) {
             for (int c = 0; c <= 1; c++) {
-                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRP[c][s], twoCellsThreeSteps.getRSRP(c,s));
-                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRQ[c][s], twoCellsThreeSteps.getRSRQ(c,s));
+                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRP[c][s], twoCellsThreeSteps.getRSRP(c, s));
+                values.put(FeedReaderContract.FeedEntry.COLUMN_RSRQ[c][s], twoCellsThreeSteps.getRSRQ(c, s));
             }
             values.put(FeedReaderContract.FeedEntry.COLUMN_LONGITUDE[s], twoCellsThreeSteps.getLongitude(s));
             values.put(FeedReaderContract.FeedEntry.COLUMN_LATITUDE[s], twoCellsThreeSteps.getLatitude(s));
@@ -346,29 +362,33 @@ public class MainService extends Service {
     //
     //
     //
-    public void startCellInfoMonitoring(){
+    public void startCellInfoMonitoring() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(CellInfoActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, CellInfoActivity.FINE_LOCATION_REQUEST);
-        }
-        else{
-            consecutiveNum ++;
-            myPhoneStateListener = new MyPhoneStateListener();
-            telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            telephonyManager.listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        } else {
+            consecutiveNum++;
+            telephonyManager.listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_CELL_INFO);
             cellInfoMonitorStatus = true;
         }
     }
 
     public void stopCellInfoMonitoring(){
-        telephonyManager.listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        telephonyManager.listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_NONE);
         cellInfoMonitorStatus = false;
     }
 
     public class MyPhoneStateListener extends PhoneStateListener {
         @Override
-        public void onSignalStrengthsChanged(SignalStrength signalStrength) {
-            super.onSignalStrengthsChanged(signalStrength);
+        public void onCellInfoChanged (List<CellInfo> cellInfo) {
+            super.onCellInfoChanged (cellInfo);
+//            Toast.makeText(MainService.this, "update", Toast.LENGTH_SHORT).show();
             getGeneralCellInfo();
+        }
+    }
+
+    public class CellUpdataExecutor implements Executor {
+        public void execute(Runnable r) {
+            r.run();
         }
     }
 
@@ -380,18 +400,13 @@ public class MainService extends Service {
         else{
             cellInfoBeans.clear();
             try{
-                cellInfoList = new ArrayList<>(telephonyManager.getAllCellInfo());
-                for (CellInfo cellInfo : cellInfoList) {
-                    CellInfoBean cellInfoBean = new CellInfoBean(cellInfo);
+                List<CellInfo> cellInfoList = new ArrayList<>(telephonyManager.getAllCellInfo());
+
+                for (CellInfo tempCellInfo : cellInfoList) {
+                    CellInfoBean cellInfoBean = new CellInfoBean(tempCellInfo);
                     cellInfoBeans.add(cellInfoBean);
                 }
                 updateNotification();
-//                lastCellInfoBeans = cellInfoBeans;
-
-//                if (GpsService.getInstance() != null) {
-//                    MainService.getInstance().updateDataByTimeList(new DataByTimeBean(GpsService.getInstance().longitude, GpsService.getInstance().latitude));
-//                }
-//                MainService.getInstance().setCellInfoBeans(cellInfoBeans);
 
                 if (CellInfoActivity.getInstance() != null) {
                     CellInfoActivity.getInstance().setCellInfoBeans(cellInfoBeans);
@@ -400,6 +415,13 @@ public class MainService extends Service {
             } catch (Exception e) {
                 Toast.makeText(MainService.this, "Phone states measurement failed", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    public class MyCellInfoCallBack extends TelephonyManager.CellInfoCallback {
+        @Override
+        public void onCellInfo(@NonNull List<CellInfo> cellInfo) {
+//            getGeneralCellInfo();
         }
     }
 

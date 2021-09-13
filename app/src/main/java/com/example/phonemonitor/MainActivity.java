@@ -93,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
                 + "2C3S data recorded: " + String.valueOf(count[1]));
     }
 
-
     public void startCellInfoActivity(View view){
         startActivity(new Intent(this, CellInfoActivity.class));
     }
