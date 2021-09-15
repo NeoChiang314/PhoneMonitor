@@ -187,7 +187,7 @@ public class MainService extends Service {
 
     public void updateNotification() {
         builder.setContentTitle("RSRP: " + String.valueOf(cellInfoBeans.get(0).getCellRSRP()));
-        builder.setContentText("Serving cell TAC: " + String.valueOf(cellInfoBeans.get(0).getCellTac()));
+        builder.setContentText("Serving cell PCI: " + String.valueOf(cellInfoBeans.get(0).getCellPci()));
         notification = builder.build();
         notificationManager.notify(001, notification);
     }
@@ -258,7 +258,7 @@ public class MainService extends Service {
             }
 
             //Check are the all cellInfo sizes bigger than the cells number required
-            int[] Tac = new int[cells];
+            int[] Pci = new int[cells];
             int consecutiveCheck = tempDataByTimeBeans.get(0).getConsecutiveNum();
             int i = 0;
             for (DataByTimeBean tempDataByTimeBean : tempDataByTimeBeans) {
@@ -273,13 +273,13 @@ public class MainService extends Service {
                     if (i == 0) {
                         //for the first dataByTime, load its Tac values
                         for (int k = 0; k < cells; k++) {
-                            Tac[k] = tempDataByTimeBean.getCellInfoBean(k).getCellTac();
+                            Pci[k] = tempDataByTimeBean.getCellInfoBean(k).getCellPci();
                         }
                     } else {
                         for (int k = 0; k < cells; k++) {
-                            if (Tac[k] != tempDataByTimeBean.getCellInfoBean(k).getCellTac()) {
+                            if (Pci[k] != tempDataByTimeBean.getCellInfoBean(k).getCellPci()) {
                                 return false;
-                                //One of the cell tac is changed, cannot record
+                                //One of the cell Pci is changed, cannot record
                             }
                         }
                     }

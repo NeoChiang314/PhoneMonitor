@@ -11,7 +11,7 @@ public class DataUnitActivity extends AppCompatActivity {
 
     DataByTimeBean dataByTimeBean;
     CellInfoAdapter cellInfoAdapter;
-    TextView dataTimeText, dataLongitudeText, dataLatitudeText, servingRSRPText, servingTACText;
+    TextView dataTimeText, dataLongitudeText, dataLatitudeText, servingRSRPText, servingPCIText;
     ListView cellInfo;
 
     @Override
@@ -25,7 +25,7 @@ public class DataUnitActivity extends AppCompatActivity {
         dataLongitudeText = findViewById(R.id.dataLongitudeView);
         dataLatitudeText = findViewById(R.id.dataLatitudeView);
         servingRSRPText = findViewById(R.id.servingRSRPView);
-        servingTACText = findViewById(R.id.servingTACView);
+        servingPCIText = findViewById(R.id.servingPCIView);
         cellInfo = findViewById(R.id.dataCellInfo);
 
         try {
@@ -33,7 +33,7 @@ public class DataUnitActivity extends AppCompatActivity {
             dataLongitudeText.setText("Longitude:\n" + String.valueOf(dataByTimeBean.longitude));
             dataLatitudeText.setText("Latitude:\n" + String.valueOf(dataByTimeBean.latitude));
             servingRSRPText.setText("Serving cell RSRP: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellRSRP()));
-            servingTACText.setText("Cell's TAC: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellTac()));
+            servingPCIText.setText("Cell's PCI: " + String.valueOf(dataByTimeBean.getCellInfoBean(0).getCellPci()));
             cellInfoAdapter = new CellInfoAdapter(dataByTimeBean.cellInfoBeans, this);
             cellInfo.setAdapter(cellInfoAdapter);
         } catch (Exception e) {
