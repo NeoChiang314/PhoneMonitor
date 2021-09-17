@@ -1,7 +1,6 @@
 package com.example.phonemonitor;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,7 +10,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationListener;
@@ -22,7 +20,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
-import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.widget.Toast;
 
@@ -170,12 +167,10 @@ public class MainService extends Service {
 
         builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_signal)
-//                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.notification_icon))
                 .setContentTitle("Please start cell monitoring")
                 .setContentText("")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
-//                .setSilent(true)
                 .setAutoCancel(false);
 
         notificationManager = NotificationManagerCompat.from(this);
@@ -349,14 +344,6 @@ public class MainService extends Service {
         db.close();
     }
 
-//    public long getTableCount() {
-//        FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
-//        SQLiteDatabase db = dbHelper.getReadableDatabase();
-//        long count = DatabaseUtils.queryNumEntries(db, FeedReaderContract.FeedEntry.TABLE_NAME_4C3S);
-//        db.close();
-//        return count;
-//    }
-
 
     //Methods for cell info monitor
     //
@@ -480,14 +467,6 @@ public class MainService extends Service {
             }
         }
     }
-
-
-
-
-    //Other methods
-    //
-    //
-    //
 }
 
 

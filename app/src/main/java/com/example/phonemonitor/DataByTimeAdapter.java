@@ -55,13 +55,4 @@ public class DataByTimeAdapter extends BaseAdapter {
     private class ViewHolder{
         TextView dataTimeList;
     }
-
-//    public void add(DataByTimeBean dataByTimeBean) {
-//        if (dataByTimeBeans == null) {
-//            dataByTimeBeans = new LinkedList<>();
-//        }
-//        dataByTimeBean.setPosition(dataByTimeBeans.size()+1);
-//        dataByTimeBeans.add(dataByTimeBean);
-//        notifyDataSetChanged();
-//    }
 }
