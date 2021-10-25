@@ -14,7 +14,6 @@ public class DataByTimeAdapter extends BaseAdapter {
     private List<DataByTimeBean> dataByTimeBeans;
     private Context context;
 
-
     public DataByTimeAdapter(List<DataByTimeBean> dataByTimeBeans, Context context) {
         this.dataByTimeBeans = dataByTimeBeans;
         this.context = context;

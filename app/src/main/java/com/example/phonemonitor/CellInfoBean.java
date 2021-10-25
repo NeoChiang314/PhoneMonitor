@@ -1,15 +1,7 @@
 package com.example.phonemonitor;
 
-import android.os.Build;
 import android.telephony.CellInfo;
-import android.telephony.CellInfoCdma;
-import android.telephony.CellInfoGsm;
 import android.telephony.CellInfoLte;
-import android.telephony.CellInfoNr;
-import android.telephony.CellInfoTdscdma;
-import android.telephony.CellInfoWcdma;
-
-import androidx.annotation.RequiresApi;
 
 public class CellInfoBean {
 
@@ -20,17 +12,6 @@ public class CellInfoBean {
     String cellMnc;
     int cellPci;
     int cellTac;
-
-    //initializer for avoiding crushing
-//    public CellInfoBean(){
-//        this.setCellType("unknown");
-//        this.setCellRSRP(0);
-//        this.setCellRSRQ(0);
-//        this.setCellMcc("unknown");
-//        this.setCellMnc("unknown");
-//        this.setCellPci(0);
-//        this.setCellTac(0);
-//    }
 
     public CellInfoBean (CellInfo cellInfo) {
         if (cellInfo instanceof CellInfoLte){

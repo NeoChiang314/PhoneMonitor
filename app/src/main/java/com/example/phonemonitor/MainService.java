@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.telephony.CellInfo;
+import android.telephony.CellInfoLte;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.widget.Toast;
@@ -122,6 +123,7 @@ public class MainService extends Service {
             public void run() {
                 if (ActivityCompat.checkSelfPermission(MainService.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     telephonyManager.requestCellInfoUpdate(cellUpdateExecutor, myCellInfoCallBack);
+//                    Toast.makeText(MainService.this, "Updated", Toast.LENGTH_SHORT).show();
                 }
                 handlerCellUpdating.postDelayed(this, delayCellUpdating);
             }
@@ -204,8 +206,8 @@ public class MainService extends Service {
             public void run() {
                 if (isCellInfoMonitorOpen() && isGpsMonitorOpen()) {
                     updateDataByTimeList();
-                    recordFourCellsThreeSteps();
-                    recordTwoCellsThreeSteps();
+//                    recordFourCellsThreeSteps();
+//                    recordTwoCellsThreeSteps();
 
                     //Tester for isRecordable method
 //                    if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4, 3)){
@@ -369,7 +371,7 @@ public class MainService extends Service {
         public void onCellInfoChanged (List<CellInfo> cellInfo) {
             super.onCellInfoChanged (cellInfo);
 //            Toast.makeText(MainService.this, "update", Toast.LENGTH_SHORT).show();
-            getGeneralCellInfo();
+            getGeneralCellInfo(cellInfo);
         }
     }
 
@@ -379,7 +381,7 @@ public class MainService extends Service {
         }
     }
 
-    public void getGeneralCellInfo() {
+    public void getGeneralCellInfo(List<CellInfo> cellInfoList) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             stopCellInfoMonitoring();
             ActivityCompat.requestPermissions(CellInfoActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, CellInfoActivity.FINE_LOCATION_REQUEST);
@@ -387,11 +389,15 @@ public class MainService extends Service {
         else{
             cellInfoBeans.clear();
             try{
-                List<CellInfo> cellInfoList = new ArrayList<>(telephonyManager.getAllCellInfo());
+//                List<CellInfo> cellInfoList = new ArrayList<>(telephonyManager.getAllCellInfo());
 
                 for (CellInfo tempCellInfo : cellInfoList) {
-                    CellInfoBean cellInfoBean = new CellInfoBean(tempCellInfo);
-                    cellInfoBeans.add(cellInfoBean);
+                    if (tempCellInfo instanceof CellInfoLte){
+                        CellInfoBean cellInfoBean = new CellInfoBean(tempCellInfo);
+                        cellInfoBeans.add(cellInfoBean);
+                    }
+//                    CellInfoBean cellInfoBean = new CellInfoBean(tempCellInfo);
+//                    cellInfoBeans.add(cellInfoBean);
                 }
                 updateNotification();
 
