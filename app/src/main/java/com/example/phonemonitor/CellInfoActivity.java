@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import android.widget.CompoundButton;
@@ -15,20 +16,11 @@ import java.util.List;
 
 public class CellInfoActivity extends AppCompatActivity {
 
-    public static final int FINE_LOCATION_REQUEST = 1;
     public static CellInfoActivity instance;
-    List<CellInfoBean> cellInfoBeans = new ArrayList<>();
     ListView listView;
-    ToggleButton toggleButton;
     CellInfoAdapter cellInfoAdapter;
 
-    public List<CellInfoBean> getCellInfoBeans() {
-        return cellInfoBeans;
-    }
-
-    public void setCellInfoBeans(List<CellInfoBean> cellInfoBeans) {
-        this.cellInfoBeans = cellInfoBeans;
-    }
+    TextView longitudeText, latitudeText;
 
     public static CellInfoActivity getInstance() {
         return instance;
@@ -40,39 +32,12 @@ public class CellInfoActivity extends AppCompatActivity {
         instance = this;
         setContentView(R.layout.activity_cell_info);
         listView = findViewById(R.id.cellInfo);
-        toggleButton = findViewById(R.id.cellInfoToggleButton);
+        longitudeText = findViewById(R.id.longitudeView);
+        latitudeText = findViewById(R.id.latitudeView);
 
-        if (!MainService.getInstance().isCellInfoMonitorOpen()) {
-            toggleButton.setChecked(false);
-            toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
-                    if(isChecked){
-                        MainService.getInstance().startCellInfoMonitoring();
-                        listView.setVisibility(View.VISIBLE);
-                    }
-                    else{
-                        MainService.getInstance().stopCellInfoMonitoring();
-                        listView.setVisibility(View.INVISIBLE);
-                    }
-                }
-            });
-        }
-        else{
-            toggleButton.setChecked(true);
-            listView.setVisibility(View.VISIBLE);
+        if (MainService.getInstance().isCellInfoMonitorOpen()) {
+            showGpsData(MainService.getInstance().longitude, MainService.getInstance().latitude);
             showCellData(MainService.getInstance().cellInfoBeans);
-            toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked){
-                    if(isChecked){
-                        MainService.getInstance().startCellInfoMonitoring();
-                        listView.setVisibility(View.VISIBLE);
-                    }
-                    else{
-                        MainService.getInstance().stopCellInfoMonitoring();
-                        listView.setVisibility(View.INVISIBLE);
-                    }
-                }
-            });
         }
     }
 
@@ -108,27 +73,19 @@ public class CellInfoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        cellInfoBeans.clear();
+//        cellInfoBeans.clear();
         instance = null;
 //        Toast.makeText(CellInfoActivity.this, "Destroy", Toast.LENGTH_SHORT).show();
     }
 
     public void showCellData (List<CellInfoBean> cellInfoBeans) {
-            cellInfoAdapter = new CellInfoAdapter(cellInfoBeans, this);
-            listView.setAdapter(cellInfoAdapter);
+        cellInfoAdapter = new CellInfoAdapter(cellInfoBeans, this);
+        listView.setAdapter(cellInfoAdapter);
+//        Toast.makeText(CellInfoActivity.this, "Show data", Toast.LENGTH_SHORT).show();
     }
 
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == FINE_LOCATION_REQUEST) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(CellInfoActivity.this, "Fine location permission granted", Toast.LENGTH_SHORT).show();
-                MainService.getInstance().startCellInfoMonitoring();
-            }
-            else {
-                Toast.makeText(CellInfoActivity.this, "Fine location permission rejected", Toast.LENGTH_SHORT).show();
-                toggleButton.setChecked(false);
-            }
-        }
+    public void showGpsData (double longitude, double latitude) {
+        longitudeText.setText("Longitude:\n" + String.valueOf(longitude));
+        latitudeText.setText("Latitude:\n" + String.valueOf(latitude));
     }
 }
