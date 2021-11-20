@@ -21,7 +21,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static MainActivity instance;
+    private static MainActivity instance;
     public static MainActivity getInstance() {
         return instance;
     }
