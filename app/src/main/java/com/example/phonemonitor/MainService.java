@@ -47,7 +47,7 @@ public class MainService extends Service {
     int position;
     int consecutiveNum;
 
-    public static MainService instance;
+    private static MainService instance = new MainService();
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
     final Handler handlerDataRecording = new Handler();
     final Handler handlerCellUpdating = new Handler();

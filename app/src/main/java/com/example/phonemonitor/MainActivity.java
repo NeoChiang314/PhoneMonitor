@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static MainActivity instance;
+    private static MainActivity instance = new MainActivity();
     public static MainActivity getInstance() {
         return instance;
     }

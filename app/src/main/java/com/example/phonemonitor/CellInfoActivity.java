@@ -16,7 +16,7 @@ import java.util.List;
 public class CellInfoActivity extends AppCompatActivity {
 
     public static final int FINE_LOCATION_REQUEST = 1;
-    public static CellInfoActivity instance;
+    private static CellInfoActivity instance = new CellInfoActivity();
     List<CellInfoBean> cellInfoBeans = new ArrayList<>();
     ListView listView;
     ToggleButton toggleButton;
