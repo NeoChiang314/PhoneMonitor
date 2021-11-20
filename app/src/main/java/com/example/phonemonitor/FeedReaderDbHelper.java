@@ -10,17 +10,19 @@ public class FeedReaderDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "SignalStrengths.db";
 
     public FeedReaderDbHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(new MyDatabaseContext(context), DATABASE_NAME, null, DATABASE_VERSION);
     }
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(FeedReaderContract.SQL_CREATE_ENTRIES_4C3S);
         db.execSQL(FeedReaderContract.SQL_CREATE_ENTRIES_2C3S);
+        db.execSQL(FeedReaderContract.SQL_CREATE_ENTRIES_CELLINFOS);
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
         db.execSQL(FeedReaderContract.SQL_DELETE_ENTRIES_4C3S);
         db.execSQL(FeedReaderContract.SQL_DELETE_ENTRIES_2C3S);
+        db.execSQL(FeedReaderContract.SQL_DELETE_ENTRIES_CELLINFOS);
         onCreate(db);
     }
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {

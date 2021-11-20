@@ -20,7 +20,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoLte;
-import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.widget.Toast;
 
@@ -32,7 +31,6 @@ import androidx.core.app.NotificationManagerCompat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 public class MainService extends Service {
 
@@ -47,13 +45,12 @@ public class MainService extends Service {
     int position;
     int consecutiveNum;
 
-    private static MainService instance = new MainService();
+    public static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
-    final Handler handlerDataRecording = new Handler();
     final Handler handlerCellUpdating = new Handler();
-    final int delayDataRecording = 2000; // 2000 milliseconds == 2 second
     final int delayCellUpdating = 500;
     FeedReaderDbHelper dbHelper;
+    Runnable cellInfoRunnable;
 
 
     //Variables for cell info monitor
@@ -62,8 +59,6 @@ public class MainService extends Service {
     //
     Boolean cellInfoMonitorStatus;
     TelephonyManager telephonyManager;
-    MyPhoneStateListener myPhoneStateListener = new MyPhoneStateListener();
-    Executor cellUpdateExecutor = new CellUpdataExecutor();
     MyCellInfoCallBack myCellInfoCallBack = new MyCellInfoCallBack();
     List<CellInfoBean> cellInfoBeans = new ArrayList<>();
 
@@ -72,10 +67,9 @@ public class MainService extends Service {
     //
     //
     //
-    Boolean gpsMonitorStatus;
     public double longitude, latitude;
     LocationManager locationManager;
-    MyLocationListener myLocationListener;
+    MyLocationListener myLocationListener = new MyLocationListener();
 
 
     //Getters and setters
@@ -98,14 +92,13 @@ public class MainService extends Service {
         return cellInfoMonitorStatus;
     }
 
-    public Boolean isGpsMonitorOpen() {
-        return gpsMonitorStatus;
-    }
+//    public Boolean isGpsMonitorOpen() {
+//        return gpsMonitorStatus;
+//    }
 
     @Override
     public void onCreate() {
-        createNotificationChannel();
-        consecutiveNum = 0;
+//        Toast.makeText(MainService.this, "Created", Toast.LENGTH_SHORT).show();
         super.onCreate();
     }
 
@@ -114,21 +107,40 @@ public class MainService extends Service {
 
         instance = this;
         cellInfoMonitorStatus = false;
-        gpsMonitorStatus = false;
-        startForegroundService();
-        startDataRecording();
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        createNotificationChannel();
+        startForegroundService();
+        consecutiveNum = 0;
+        MainActivity.getInstance().setToggleButton();
 
-        Runnable cellInfoRunnable = new Runnable() {
+        cellInfoRunnable = new Runnable() {
             public void run() {
-                if (ActivityCompat.checkSelfPermission(MainService.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    telephonyManager.requestCellInfoUpdate(cellUpdateExecutor, myCellInfoCallBack);
-//                    Toast.makeText(MainService.this, "Updated", Toast.LENGTH_SHORT).show();
+                if (ActivityCompat.checkSelfPermission(MainService.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    stopCellInfoMonitoring();
+                    ActivityCompat.requestPermissions(MainActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MainActivity.FINE_LOCATION_REQUEST);
+                    return;
+                }
+                else {
+                    telephonyManager.requestCellInfoUpdate(getMainExecutor(), myCellInfoCallBack);
+//                    Toast.makeText(MainService.this, "Request update", Toast.LENGTH_SHORT).show();
+                    updateDataByTimeList();
+                }
+
+                if ((ActivityCompat.checkSelfPermission(MainService.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+                        (ActivityCompat.checkSelfPermission(MainService.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+                    stopCellInfoMonitoring();
+                    ActivityCompat.requestPermissions(MainActivity.getInstance(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, MainActivity.EXTERNAL_STORAGE);
+                    return;
+                }
+                else{
+//                    recordFourCellsThreeSteps();
+//                    recordTwoCellsThreeSteps();
+                    recordCellInfos();
                 }
                 handlerCellUpdating.postDelayed(this, delayCellUpdating);
             }
         };
-        cellUpdateExecutor.execute(cellInfoRunnable);
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -201,29 +213,6 @@ public class MainService extends Service {
     //
     //
     //
-    public void startDataRecording() {
-        handlerDataRecording.postDelayed(new Runnable() {
-            public void run() {
-                if (isCellInfoMonitorOpen() && isGpsMonitorOpen()) {
-                    updateDataByTimeList();
-//                    recordFourCellsThreeSteps();
-//                    recordTwoCellsThreeSteps();
-
-                    //Tester for isRecordable method
-//                    if (isRecordable(dataByTimeBeans, (dataByTimeBeans.size()-1), 4, 3)){
-//                        Toast.makeText(MainService.this, "Recorded", Toast.LENGTH_SHORT).show();
-//                    }
-//                    else {
-//                        Toast.makeText(MainService.this, "Record failed", Toast.LENGTH_SHORT).show();
-//                    }
-                    //
-
-                }
-                handlerDataRecording.postDelayed(this, delayDataRecording);
-            }
-        }, delayDataRecording);
-    }
-
     private void updateDataByTimeList() {
         DataByTimeBean dataByTimeBean = new DataByTimeBean(longitude, latitude, cellInfoBeans, consecutiveNum);
         dataByTimeBean.setPosition(dataByTimeBeans.size() + 1);
@@ -301,6 +290,12 @@ public class MainService extends Service {
         }
     }
 
+    private void recordCellInfos() {
+        if (dataByTimeBeans.size() > 0 && dataByTimeBeans.get(dataByTimeBeans.size()-1).cellInfoBeans.size() > 2) {
+            insertCellInfos(dataByTimeBeans.get(dataByTimeBeans.size()-1));
+        }
+    }
+
     private void insertFourCellsThreeSteps(FourCellsThreeSteps fourCellsThreeSteps) {
         FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
 
@@ -346,6 +341,26 @@ public class MainService extends Service {
         db.close();
     }
 
+    private void insertCellInfos(DataByTimeBean dataByTimeBean) {
+        FeedReaderDbHelper dbHelper = new FeedReaderDbHelper(this);
+
+        // Gets the data repository in write mode
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        for (int i = 0; i < 3; i++){
+            values.put(FeedReaderContract.FeedEntry.RSRP[i], dataByTimeBean.getCellInfoBeans().get(i).getCellRSRP());
+            values.put(FeedReaderContract.FeedEntry.RSRQ[i], dataByTimeBean.getCellInfoBeans().get(i).getCellRSRQ());
+            values.put(FeedReaderContract.FeedEntry.PCI[i], dataByTimeBean.getCellInfoBeans().get(i).getCellPci());
+            values.put(FeedReaderContract.FeedEntry.TAC[i], dataByTimeBean.getCellInfoBeans().get(i).getCellTac());
+        }
+        values.put("Longitude", dataByTimeBean.getLongitude());
+        values.put("Latitude", dataByTimeBean.getLatitude());
+
+        // Insert the new row, returning the primary key value of the new row
+        long lastRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME_CELLINFOS, null, values);
+        db.close();
+    }
+
 
     //Methods for cell info monitor
     //
@@ -353,68 +368,56 @@ public class MainService extends Service {
     //
     public void startCellInfoMonitoring() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(CellInfoActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, CellInfoActivity.FINE_LOCATION_REQUEST);
-        } else {
-            consecutiveNum++;
-            telephonyManager.listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_CELL_INFO);
-            cellInfoMonitorStatus = true;
+            ActivityCompat.requestPermissions(MainActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MainActivity.FINE_LOCATION_REQUEST);
+            return;
         }
+        if ((ActivityCompat.checkSelfPermission(MainService.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+                (ActivityCompat.checkSelfPermission(MainService.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(MainActivity.getInstance(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, MainActivity.EXTERNAL_STORAGE);
+            return;
+        }
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        consecutiveNum ++;
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 200, 1, myLocationListener);
+        cellInfoRunnable.run();
+        consecutiveNum++;
+        cellInfoMonitorStatus = true;
     }
 
     public void stopCellInfoMonitoring(){
-        telephonyManager.listen(myPhoneStateListener, MyPhoneStateListener.LISTEN_NONE);
+        handlerCellUpdating.removeCallbacks(cellInfoRunnable);
+        locationManager.removeUpdates(myLocationListener);
         cellInfoMonitorStatus = false;
-    }
-
-    public class MyPhoneStateListener extends PhoneStateListener {
-        @Override
-        public void onCellInfoChanged (List<CellInfo> cellInfo) {
-            super.onCellInfoChanged (cellInfo);
-//            Toast.makeText(MainService.this, "update", Toast.LENGTH_SHORT).show();
-            getGeneralCellInfo(cellInfo);
-        }
-    }
-
-    public class CellUpdataExecutor implements Executor {
-        public void execute(Runnable r) {
-            r.run();
-        }
-    }
-
-    public void getGeneralCellInfo(List<CellInfo> cellInfoList) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            stopCellInfoMonitoring();
-            ActivityCompat.requestPermissions(CellInfoActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, CellInfoActivity.FINE_LOCATION_REQUEST);
-        }
-        else{
-            cellInfoBeans.clear();
-            try{
-//                List<CellInfo> cellInfoList = new ArrayList<>(telephonyManager.getAllCellInfo());
-
-                for (CellInfo tempCellInfo : cellInfoList) {
-                    if (tempCellInfo instanceof CellInfoLte){
-                        CellInfoBean cellInfoBean = new CellInfoBean(tempCellInfo);
-                        cellInfoBeans.add(cellInfoBean);
-                    }
-//                    CellInfoBean cellInfoBean = new CellInfoBean(tempCellInfo);
-//                    cellInfoBeans.add(cellInfoBean);
-                }
-                updateNotification();
-
-                if (CellInfoActivity.getInstance() != null) {
-                    CellInfoActivity.getInstance().setCellInfoBeans(cellInfoBeans);
-                    CellInfoActivity.getInstance().showCellData(cellInfoBeans);
-                }
-            } catch (Exception e) {
-                Toast.makeText(MainService.this, "Phone states measurement failed", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     public class MyCellInfoCallBack extends TelephonyManager.CellInfoCallback {
         @Override
         public void onCellInfo(@NonNull List<CellInfo> cellInfo) {
-//            getGeneralCellInfo();
+//            Toast.makeText(MainService.this, "Callback", Toast.LENGTH_SHORT).show();
+            getGeneralCellInfo(cellInfo);
+        }
+
+        @Override
+        public void onError(int errorCode, Throwable detail){
+            Toast.makeText(MainService.this, "CallbackError", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void getGeneralCellInfo(List<CellInfo> cellInfoList) {
+        cellInfoBeans.clear();
+        for (CellInfo tempCellInfo : cellInfoList) {
+            if (tempCellInfo instanceof CellInfoLte){
+                CellInfoBean cellInfoBean = new CellInfoBean(tempCellInfo);
+                cellInfoBeans.add(cellInfoBean);
+            }
+        }
+        updateNotification();
+//        Toast.makeText(MainService.this, "Show data", Toast.LENGTH_SHORT).show();
+
+        if (CellInfoActivity.getInstance() != null) {
+            CellInfoActivity.getInstance().showCellData(cellInfoBeans);
+//            Toast.makeText(MainService.this, "Show data", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -423,26 +426,7 @@ public class MainService extends Service {
     //
     //
     //
-    public void startGpsMonitoring(){
-        myLocationListener = new MyLocationListener();
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(GpsActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, GpsActivity.FINE_LOCATION_REQUEST);
-        }
-        else{
-            consecutiveNum ++;
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, myLocationListener);
-            gpsMonitorStatus = true;
-        }
-    }
-
-    public void stopGpsMonitoring(){
-        locationManager.removeUpdates(myLocationListener);
-        gpsMonitorStatus = false;
-    }
-
     public class MyLocationListener implements LocationListener {
-
         @Override
         public void onLocationChanged (Location loc){
 //            Toast.makeText(GpsService.this, "Location updated", Toast.LENGTH_SHORT).show();
@@ -460,19 +444,12 @@ public class MainService extends Service {
     }
 
     public void getLocationInfo (Location loc) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            stopGpsMonitoring();
-            ActivityCompat.requestPermissions(GpsActivity.getInstance(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, GpsActivity.FINE_LOCATION_REQUEST);
-        }
-        else{
-            longitude = loc.getLongitude();
-            latitude = loc.getLatitude();
+        longitude = loc.getLongitude();
+        latitude = loc.getLatitude();
 
-            if (GpsActivity.getInstance() != null) {
-                GpsActivity.getInstance().showGpsData(longitude, latitude);
-            }
+        if (CellInfoActivity.getInstance() != null) {
+//            Toast.makeText(MainService.this, "update", Toast.LENGTH_SHORT).show();
+            CellInfoActivity.getInstance().showGpsData(longitude, latitude);
         }
     }
 }
-
-
