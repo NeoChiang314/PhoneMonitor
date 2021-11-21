@@ -37,8 +37,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        Toast.makeText(MainActivity.this, "Create", Toast.LENGTH_SHORT).show();
         instance = this;
+//        Toast.makeText(MainActivity.this, "Create", Toast.LENGTH_SHORT).show();
         setContentView(R.layout.activity_main);
         listView = findViewById(R.id.dataByTime);
         dataRecordedText = findViewById(R.id.dataRecordedView);
@@ -64,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume(){
+        super.onResume();
+    }
+
+    @Override
     protected void onPause(){
         super.onPause();
 //        Toast.makeText(MainActivity.this, "Pause", Toast.LENGTH_SHORT).show();
@@ -78,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        cellInfoBeans.clear();
         instance = null;
+//        cellInfoBeans.clear();
 //        Toast.makeText(MainActivity.this, "Destroy", Toast.LENGTH_SHORT).show();
     }
 

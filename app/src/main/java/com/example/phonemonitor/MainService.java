@@ -48,7 +48,7 @@ public class MainService extends Service {
     private static MainService instance;
     List<DataByTimeBean> dataByTimeBeans = new ArrayList<>();
     final Handler handlerCellUpdating = new Handler();
-    final int delayCellUpdating = 500;
+    final int delayCellUpdating = 2000;
     FeedReaderDbHelper dbHelper;
     Runnable cellInfoRunnable;
 
@@ -138,6 +138,7 @@ public class MainService extends Service {
                     recordCellInfos();
                 }
                 handlerCellUpdating.postDelayed(this, delayCellUpdating);
+//                Toast.makeText(MainService.this, "Runnable finish", Toast.LENGTH_SHORT).show();
             }
         };
 
@@ -219,6 +220,7 @@ public class MainService extends Service {
         dataByTimeBeans.add(dataByTimeBean);
         if (MainActivity.getInstance() != null) {
             MainActivity.getInstance().updateDataByTimeView();
+//            Toast.makeText(MainService.this, "Update list", Toast.LENGTH_SHORT).show();
         }
     }
 
